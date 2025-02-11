@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="wireframe.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.0179639"
+     inkscape:cx="280.95299"
+     inkscape:cy="412.5883"
+     inkscape:window-width="1920"
+     inkscape:window-height="1043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     showgrid="false" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3;fill-opacity:1"
+       id="rect2"
+       width="160.86151"
+       height="91.729179"
+       x="30.590506"
+       y="42.937263" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       id="rect1"
+       width="160.59692"
+       height="91.4646"
+       x="30.590506"
+       y="42.937267" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       id="rect3"
+       width="117.9677"
+       height="10.336591"
+       x="50.976845"
+       y="63.704498" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       id="rect4"
+       width="12.990066"
+       height="10.336591"
+       x="156.21906"
+       y="63.704498" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       d="m 161.76997,65.771249 -4.09594,0.133511 0.20357,6.239973 8.3368,-0.794718 -0.51171,-4.67795 -2.9886,0.214228 z"
+       id="path4" />
+    <path
+       style="fill:#000000;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3;fill-opacity:1"
+       d="m 158.79796,67.839212 8.03856,-0.5216 -0.32993,4.030913 -8.50081,0.699328 z"
+       id="path5" />
+    <text
+       xml:space="preserve"
+       style="font-size:6.842px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-dashoffset:0.3"
+       x="52.955868"
+       y="71.329071"
+       id="text5"><tspan
+         sodipodi:role="line"
+         id="tspan5"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167"
+         x="52.955868"
+         y="71.329071">C://Path/To/File.ext</tspan></text>
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       id="rect11"
+       width="117.9677"
+       height="10.336591"
+       x="50.240448"
+       y="93.106995" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       id="rect12"
+       width="12.990066"
+       height="10.336591"
+       x="155.48267"
+       y="93.106995" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       d="m 161.03357,95.173752 -4.09594,0.13351 0.20357,6.239978 8.3368,-0.79472 -0.51171,-4.677948 -2.9886,0.21423 z"
+       id="path12" />
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3"
+       d="m 158.06156,97.241712 8.03856,-0.5216 -0.32993,4.030918 -8.50081,0.69933 z"
+       id="path13" />
+    <text
+       xml:space="preserve"
+       style="font-size:6.842px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-dashoffset:0.3"
+       x="52.219471"
+       y="100.73157"
+       id="text13"><tspan
+         sodipodi:role="line"
+         id="tspan13"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167"
+         x="52.219471"
+         y="100.73157">C://Path/To/File_cleaned.ext</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6.85029px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529166;stroke-dashoffset:0.3;stroke-opacity:1"
+       x="50.845879"
+       y="59.886105"
+       id="text14"><tspan
+         sodipodi:role="line"
+         id="tspan14"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529166"
+         x="50.845879"
+         y="59.886105">Input file:</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:6.85029px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529166;stroke-dashoffset:0.3;stroke-opacity:1"
+       x="50.845879"
+       y="89.70359"
+       id="text15"><tspan
+         sodipodi:role="line"
+         id="tspan15"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529166"
+         x="50.845879"
+         y="89.70359">Output file:</tspan></text>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.529167;stroke-dashoffset:0.3;stroke-opacity:1"
+       id="rect15"
+       width="35.672253"
+       height="11.748937"
+       x="145.05521"
+       y="113.53075" />
+    <text
+       xml:space="preserve"
+       style="font-size:6.842px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167;stroke-dashoffset:0.3"
+       x="149.31685"
+       y="121.8615"
+       id="text16"><tspan
+         sodipodi:role="line"
+         id="tspan16"
+         style="fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.529167"
+         x="149.31685"
+         y="121.8615">Clean file</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.51797px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#1d9800;fill-opacity:1;stroke:none;stroke-width:0.529166;stroke-dashoffset:0.3;stroke-opacity:1"
+       x="49.63715"
+       y="108.64722"
+       id="text17"><tspan
+         sodipodi:role="line"
+         id="tspan17"
+         style="fill:#1d9800;fill-opacity:1;stroke:none;stroke-width:0.529166"
+         x="49.63715"
+         y="108.64722">File created</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.51797px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#d40400;fill-opacity:1;stroke:none;stroke-width:0.529166;stroke-dashoffset:0.3;stroke-opacity:1"
+       x="50.350822"
+       y="79.186775"
+       id="text18"><tspan
+         sodipodi:role="line"
+         id="tspan18"
+         style="fill:#d40400;fill-opacity:1;stroke:none;stroke-width:0.529166"
+         x="50.350822"
+         y="79.186775">X &quot; found</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.51797px;font-family:FreeSans;-inkscape-font-specification:'FreeSans, Normal';fill:#1d9800;fill-opacity:1;stroke:none;stroke-width:0.529166;stroke-dashoffset:0.3;stroke-opacity:1"
+       x="72.159256"
+       y="79.186775"
+       id="text19"><tspan
+         sodipodi:role="line"
+         id="tspan19"
+         style="fill:#1d9800;fill-opacity:1;stroke:none;stroke-width:0.529166"
+         x="72.159256"
+         y="79.186775">0 &quot; found</tspan></text>
+  </g>
+</svg>
