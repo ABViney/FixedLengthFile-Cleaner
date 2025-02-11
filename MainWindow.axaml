@@ -2,8 +2,48 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:CompileBindings="True"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="120"
         x:Class="FixedLengthFile_Cleaner.MainWindow"
-        Title="FixedLengthFile_Cleaner">
-    Welcome to Avalonia!
+        Title="FixedLengthFile Cleaner"
+        Width="300" CanResize="False" SizeToContent="Height"
+        DragDrop.AllowDrop="True">
+    
+    <Border Padding="10">
+        <StackPanel Spacing="10">
+            
+            <!-- File selectors -->
+            <StackPanel MaxWidth="300" Spacing="10">
+                
+                <!-- Input file selector -->   
+                <DockPanel>
+                    <Button Name="InputFileDialogButton"
+                            Content="File"
+                            Click="HandleInputFileButtonClick"
+                            DockPanel.Dock="Right"/>
+                    <TextBox Name="InputFileTextBox" IsReadOnly="True" />
+                </DockPanel>
+                
+                <!-- Output file selector -->
+                <DockPanel>
+                    <Button Name="OutputFileDialogButton"
+                            Content="File"
+                            Click="HandleOutputFileButtonClick"
+                            DockPanel.Dock="Right"/>
+                    <TextBox Name="OutputFileTextBox" IsReadOnly="True" />
+                </DockPanel>
+                
+            </StackPanel>
+            
+            <!-- Do stuff button -->
+            <RelativePanel>
+                <Button Name="CleanButton"
+                        Content="Clean"
+                        Click="OnCleanButtonClick"
+                        RelativePanel.AlignRightWithPanel="True" />
+            </RelativePanel>
+            
+        </StackPanel>
+    </Border>
+    
 </Window>
