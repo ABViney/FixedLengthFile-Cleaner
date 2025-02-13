@@ -10,8 +10,10 @@ namespace FixedLengthFile_Cleaner;
 
 public partial class MainWindow : Window
 {
-    private Uri? _inputFilePath;
-    private Uri? _outputFilePath;
+    const string DEFAULT_OUTPUT_FILENAME_SUFFIX = "_cleaned"; 
+    
+    private string? _inputFilePath;
+    private string? _outputFilePath;
 
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
@@ -32,9 +34,9 @@ public partial class MainWindow : Window
             _inputFilePath = value;
             InputFileTextBox.Text = Uri.UnescapeDataString(_inputFilePath.AbsolutePath);
             
-            const string default_output_suffix = "_cleaned";
 
             Uri default_output_path;
+
             
             // Add "_cleaned" to the file name
             if (value.ToString().Contains(".")) // If the file has an extension, insert the suffix before it.
