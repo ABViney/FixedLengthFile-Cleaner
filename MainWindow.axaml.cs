@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 
 namespace FixedLengthFile_Cleaner;
 
@@ -63,6 +65,7 @@ public partial class MainWindow : Window
                 OutputFileTextBox.IsEnabled = false;
                 OutputFileDialogButton.IsEnabled = false;
                 CleanButton.IsEnabled = false;
+                ShowUploadFileDecal();
                 return;
             }
             
@@ -71,6 +74,8 @@ public partial class MainWindow : Window
             OutputFileTextBox.IsEnabled = true;
             OutputFileDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
+            CleanButton.Content = "Clean";
+            ShowFileReadyDecal();
         }
     }
     
@@ -119,30 +124,72 @@ public partial class MainWindow : Window
         }
     }
 
-    private void OnCleanButtonClick(object sender, RoutedEventArgs e)
+    private async void OnCleanButtonClick(object sender, RoutedEventArgs e)
     {
-        try
+        // Run process on not the UI thread
+        await Task.Run(() =>
         {
-            using (StreamReader input = new StreamReader(InputFilePath))
-            using (StreamWriter output = new StreamWriter(OutputFilePath))
+            try
             {
-                int character;
-                while ((character = input.Read()) != -1) // Read character by character
+                using (StreamReader input = new StreamReader(InputFilePath))
+                using (StreamWriter output = new StreamWriter(OutputFilePath))
                 {
-                    // Replace quotation marks with spaces
-                    output.Write(character != '"' ? (char)character : ' ');
+                    // Update view to indicate cleaning
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        CleanButton.Content = "Cleaning...";
+                        ShowCleaningDecal();
+                    });
+
+                    int character;
+                    int numOfQuotesReplaced = 0;
+                    while ((character = input.Read()) != -1) // Read character by character
+                    {
+                        // Replace quotation marks with spaces
+                        if (character == '"')
+                        {
+                            character = ' ';
+                            numOfQuotesReplaced++;
+                        }
+
+                        output.Write((char)character);
+                    }
+
+                    // Reset view and inform user of how many quotes were replaced.
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        CleanButton.Content =
+                            $"{numOfQuotesReplaced} \"{(numOfQuotesReplaced == 1 ? "" : "s")} replaced";
+                        Reset();
+                    });
                 }
             }
-            
-            Reset();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error: {ex.Message}");
-        }
-        
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        });
     }
 
+    private void ShowUploadFileDecal()
+    {
+        UploadFileDecalImage.IsVisible = true;
+        FileReadyDecalImage.IsVisible = false;
+        CleaningDecalImage.IsVisible = false;
+    }
+    private void ShowFileReadyDecal()
+    {
+        UploadFileDecalImage.IsVisible = false;
+        FileReadyDecalImage.IsVisible = true;
+        CleaningDecalImage.IsVisible = false;
+    }
+    private void ShowCleaningDecal()
+    {
+        UploadFileDecalImage.IsVisible = false;
+        FileReadyDecalImage.IsVisible = false;
+        CleaningDecalImage.IsVisible = true;
+    }
+    
     private void Reset()
     {
         InputFilePath = null;
