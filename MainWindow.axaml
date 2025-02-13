@@ -6,6 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="120"
         x:Class="FixedLengthFile_Cleaner.MainWindow"
         Title="FixedLengthFile Cleaner"
+        Icon="/Assets/icon.ico"
         Width="300" CanResize="False" SizeToContent="Height"
         DragDrop.AllowDrop="True">
     
