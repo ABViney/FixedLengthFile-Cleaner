@@ -36,6 +36,13 @@
                 
             </StackPanel>
             
+            <!-- (suggested) file drop target -->
+            <Panel>
+                <Image Name="FileReadyDecalImage" Source="/Assets/file_ready_decal.png" />
+                <Image Name="UploadFileDecalImage" Source="/Assets/upload_file_decal.png" />
+                <Image Name="CleaningDecalImage" Source="/Assets/cleaning_decal.png" IsVisible="False"/>
+            </Panel>
+            
             <!-- Do stuff button -->
             <RelativePanel>
                 <Button Name="CleanButton"
