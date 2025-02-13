@@ -18,7 +18,7 @@ public partial class MainWindow : Window
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
     
-    public Uri? InputFilePath
+    public string? InputFilePath
     {
         get => _inputFilePath;
         set // Sets the input file path as well as the output file path and the input file text box
@@ -32,29 +32,26 @@ public partial class MainWindow : Window
             }
             
             _inputFilePath = value;
-            InputFileTextBox.Text = Uri.UnescapeDataString(_inputFilePath.AbsolutePath);
-            
+            InputFileTextBox.Text = value;
 
-            Uri default_output_path;
-
+            string default_output_file_path;
             
             // Add "_cleaned" to the file name
-            if (value.ToString().Contains(".")) // If the file has an extension, insert the suffix before it.
+            if (Path.HasExtension(value)) // If the file has an extension, insert the suffix before it.
             {
-                string[] split = Uri.UnescapeDataString(_inputFilePath.AbsolutePath).Split('.');
-                split[split.Length - 2] = split[split.Length - 2] + default_output_suffix;
-                default_output_path = new Uri(String.Join(".", split));
+                string extension = Path.GetExtension(value);
+                default_output_file_path = String.Concat(Path.ChangeExtension(value, null), DEFAULT_OUTPUT_FILENAME_SUFFIX, extension);
             }
             else
             {
-                default_output_path = new Uri(value + default_output_suffix);
+                default_output_file_path = value + DEFAULT_OUTPUT_FILENAME_SUFFIX;
             }
 
-            OutputFilePath = default_output_path;
+            OutputFilePath = default_output_file_path;
         }
     }
     
-    public Uri? OutputFilePath
+    public string? OutputFilePath
     {
         get => _outputFilePath;
         set
@@ -70,7 +67,7 @@ public partial class MainWindow : Window
             }
             
             _outputFilePath = value;
-            OutputFileTextBox.Text = Uri.UnescapeDataString(_outputFilePath.AbsolutePath);
+            OutputFileTextBox.Text = _outputFilePath;
             OutputFileTextBox.IsEnabled = true;
             OutputFileDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
@@ -96,7 +93,7 @@ public partial class MainWindow : Window
 
         if (files.Count == 1)
         {
-            InputFilePath = files[0].Path;
+            InputFilePath = files[0].TryGetLocalPath();
         }
     }
 
@@ -109,7 +106,7 @@ public partial class MainWindow : Window
             SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(InputFilePath)
         });
 
-        OutputFilePath = file.Path;
+        OutputFilePath = file.TryGetLocalPath();
     }
 
     private void OnDrop(object sender, DragEventArgs e)
@@ -118,7 +115,7 @@ public partial class MainWindow : Window
         if (files.Length == 1)
         {
             Console.WriteLine($"Dropped file {files[0]}");
-            InputFilePath = files[0].Path;
+            InputFilePath = files[0].TryGetLocalPath();
         }
     }
 
@@ -126,8 +123,8 @@ public partial class MainWindow : Window
     {
         try
         {
-            using (StreamReader input = new StreamReader(Uri.UnescapeDataString(InputFilePath.AbsolutePath)))
-            using (StreamWriter output = new StreamWriter(Uri.UnescapeDataString(OutputFilePath.AbsolutePath)))
+            using (StreamReader input = new StreamReader(InputFilePath))
+            using (StreamWriter output = new StreamWriter(OutputFilePath))
             {
                 int character;
                 while ((character = input.Read()) != -1) // Read character by character
@@ -137,7 +134,7 @@ public partial class MainWindow : Window
                         // Replace quotation marks with spaces
                         character = ' ';
                     }
-
+            
                     output.Write((char)character);
                 }
             }
