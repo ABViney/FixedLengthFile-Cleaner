@@ -129,13 +129,8 @@ public partial class MainWindow : Window
                 int character;
                 while ((character = input.Read()) != -1) // Read character by character
                 {
-                    if (character == '"')
-                    {
-                        // Replace quotation marks with spaces
-                        character = ' ';
-                    }
-            
-                    output.Write((char)character);
+                    // Replace quotation marks with spaces
+                    output.Write(character != '"' ? (char)character : ' ');
                 }
             }
             
