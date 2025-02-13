@@ -18,7 +18,7 @@
                 <!-- Input file selector -->   
                 <DockPanel>
                     <Button Name="InputFileDialogButton"
-                            Content="File"
+                            Content="..."
                             Click="HandleInputFileButtonClick"
                             DockPanel.Dock="Right"/>
                     <TextBox Name="InputFileTextBox" IsReadOnly="True" />
@@ -27,7 +27,7 @@
                 <!-- Output file selector -->
                 <DockPanel>
                     <Button Name="OutputFileDialogButton"
-                            Content="File"
+                            Content="..."
                             Click="HandleOutputFileButtonClick"
                             DockPanel.Dock="Right"/>
                     <TextBox Name="OutputFileTextBox" IsReadOnly="True" />
