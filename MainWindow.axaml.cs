@@ -35,6 +35,7 @@ public partial class MainWindow : Window
             
             _inputFilePath = value;
             InputFileTextBox.Text = value;
+            InputFileTextBox.CaretIndex = InputFileTextBox.Text.Length;
 
             string default_output_file_path;
             
@@ -63,6 +64,7 @@ public partial class MainWindow : Window
                 _outputFilePath = null;
                 OutputFileTextBox.Text = _defaultOutputFileTextBoxContent;
                 OutputFileTextBox.IsEnabled = false;
+                OutputFileTextBox.IsReadOnly = true;
                 OutputFileDialogButton.IsEnabled = false;
                 CleanButton.IsEnabled = false;
                 ShowUploadFileDecal();
@@ -71,7 +73,25 @@ public partial class MainWindow : Window
             
             _outputFilePath = value;
             OutputFileTextBox.Text = _outputFilePath;
+            
+            // Enable editing so the user can change the output filename easily
             OutputFileTextBox.IsEnabled = true;
+            OutputFileTextBox.IsReadOnly = false;
+            
+            // Move caret to the end, so the end of the file name is in frame
+            OutputFileTextBox.SelectionStart = OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length;
+            
+            // then move the cursor behind the extension if there is one, and select the text
+            // OutputFileTextBox.CaretIndex = OutputFileTextBox.Text.Length - Path.GetExtension(OutputFileTextBox.Text).Length;
+            OutputFileTextBox.SelectionStart = OutputFileTextBox.Text.Length
+                                               - Path.GetExtension(value).Length
+                                               - DEFAULT_OUTPUT_FILENAME_SUFFIX.Length;
+            OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length
+                                             - Path.GetExtension(value).Length;
+            
+            // Give the control focus so they user can type immediately
+            OutputFileTextBox.Focus();
+            
             OutputFileDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
             CleanButton.Content = "Clean";

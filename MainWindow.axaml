@@ -22,7 +22,7 @@
                             Content="..."
                             Click="HandleInputFileButtonClick"
                             DockPanel.Dock="Right"/>
-                    <TextBox Name="InputFileTextBox" IsReadOnly="True" />
+                    <TextBox Name="InputFileTextBox" IsReadOnly="True" IsEnabled="False"/>
                 </DockPanel>
                 
                 <!-- Output file selector -->
