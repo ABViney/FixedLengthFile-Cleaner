@@ -32,3 +32,6 @@ Made a portable app that streamlines this process.
 ![Finished](docs/4.PNG)
 5. A version of your input file with its quotation marks replaced with spaces will be written to the disk.  
 ![Output](docs/5.PNG)
+
+# Todo:
+- Support batch processing of files in a ZIP archive
