@@ -1,0 +1,18 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="120"
+             x:Class="FixedLengthFile_Cleaner.Controls.DropzoneDecalPresenter">
+    <Panel>
+        <!-- Initial presentation -->
+        <Image Name="FileDropzoneDecalImage" Source="/Assets/file_dropzone_decal.png" />
+        
+        <!-- File selected and ready -->
+        <Image Name="SingleFileReadyDecalImage" Source="/Assets/single_file_ready_decal.png" />
+        <Image Name="ZipArchiveReadyDecalImage" Source="/Assets/zip_archive_ready_decal.png" />
+        
+        <!-- Processing selection -->
+        <Image Name="ProcessingDecalImage" Source="/Assets/processing_decal.png" />
+    </Panel>
+</UserControl>

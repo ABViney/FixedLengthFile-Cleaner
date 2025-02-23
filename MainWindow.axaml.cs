@@ -67,7 +67,6 @@ public partial class MainWindow : Window
                 OutputFileTextBox.IsReadOnly = true;
                 OutputFileDialogButton.IsEnabled = false;
                 CleanButton.IsEnabled = false;
-                ShowUploadFileDecal();
                 return;
             }
             
@@ -95,7 +94,7 @@ public partial class MainWindow : Window
             OutputFileDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
             CleanButton.Content = "Clean";
-            ShowFileReadyDecal();
+            DropzoneDecalPresenter.ShowSingleFileReady();
         }
     }
     
@@ -158,7 +157,7 @@ public partial class MainWindow : Window
                     Dispatcher.UIThread.Post(() =>
                     {
                         CleanButton.Content = "Cleaning...";
-                        ShowCleaningDecal();
+                        DropzoneDecalPresenter.ShowProcessing();
                     });
 
                     int character;
@@ -190,28 +189,10 @@ public partial class MainWindow : Window
             }
         });
     }
-
-    private void ShowUploadFileDecal()
-    {
-        UploadFileDecalImage.IsVisible = true;
-        FileReadyDecalImage.IsVisible = false;
-        CleaningDecalImage.IsVisible = false;
-    }
-    private void ShowFileReadyDecal()
-    {
-        UploadFileDecalImage.IsVisible = false;
-        FileReadyDecalImage.IsVisible = true;
-        CleaningDecalImage.IsVisible = false;
-    }
-    private void ShowCleaningDecal()
-    {
-        UploadFileDecalImage.IsVisible = false;
-        FileReadyDecalImage.IsVisible = false;
-        CleaningDecalImage.IsVisible = true;
-    }
     
     private void Reset()
     {
         InputFilePath = null;
+        DropzoneDecalPresenter.ShowDropzone();
     }
 }
