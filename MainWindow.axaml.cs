@@ -16,6 +16,7 @@ public partial class MainWindow : Window
     
     private string? _inputFilePath;
     private string? _outputFilePath;
+    private string? _inputFileType;
 
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
@@ -28,29 +29,29 @@ public partial class MainWindow : Window
             if (value is null) // Reset to default
             {
                 _inputFilePath = null;
+                _inputFileType = null;
                 InputFileTextBox.Text = _defaultInputFileTextBoxContent;
                 OutputFilePath = null;
                 return;
             }
             
             _inputFilePath = value;
-            InputFileTextBox.Text = value;
+            InputFileTextBox.Text = _inputFilePath;
             InputFileTextBox.CaretIndex = InputFileTextBox.Text.Length;
-
-            string default_output_file_path;
             
             // Add "_cleaned" to the file name
-            if (Path.HasExtension(value)) // If the file has an extension, insert the suffix before it.
+            string extension = Path.GetExtension(value);
+            if (extension == String.Empty)
             {
-                string extension = Path.GetExtension(value);
-                default_output_file_path = String.Concat(Path.ChangeExtension(value, null), DEFAULT_OUTPUT_FILENAME_SUFFIX, extension);
+                OutputFilePath = _inputFilePath + DEFAULT_OUTPUT_FILENAME_SUFFIX;
             }
             else
             {
-                default_output_file_path = value + DEFAULT_OUTPUT_FILENAME_SUFFIX;
+                // If the file has an extension, insert the suffix before it.
+                OutputFilePath = String.Concat(Path.ChangeExtension(value, null), DEFAULT_OUTPUT_FILENAME_SUFFIX, extension);
             }
-
-            OutputFilePath = default_output_file_path;
+            
+            _inputFileType = extension.EndsWith("zip") ? "zip" : "text";
         }
     }
     
@@ -105,7 +106,7 @@ public partial class MainWindow : Window
         
         Reset();
     }
-
+    
     private async void HandleInputFileButtonClick(object sender, RoutedEventArgs e)
     {
         var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
@@ -117,11 +118,11 @@ public partial class MainWindow : Window
 
         if (files.Count == 1)
         {
-            InputFilePath = files[0].TryGetLocalPath();
+            SetInputFile(files[0].TryGetLocalPath());
         }
     }
-
-    private async void HandleOutputFileButtonClick(object sender, RoutedEventArgs e)
+    
+    private async void HandleOutputFileButtonClick(object? sender, RoutedEventArgs e)
     {
         var file = await this.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
@@ -139,7 +140,7 @@ public partial class MainWindow : Window
         if (files.Length == 1)
         {
             Console.WriteLine($"Dropped file {files[0]}");
-            InputFilePath = files[0].TryGetLocalPath();
+            SetInputFile(files[0].TryGetLocalPath());
         }
     }
 
@@ -194,5 +195,18 @@ public partial class MainWindow : Window
     {
         InputFilePath = null;
         DropzoneDecalPresenter.ShowDropzone();
+    }
+
+    private void SetInputFile(string inputFilePath)
+    {
+        InputFilePath = inputFilePath;
+        if (_inputFileType == "zip")
+        {
+            DropzoneDecalPresenter.ShowZipArchiveReady();
+        }
+        else
+        {
+            DropzoneDecalPresenter.ShowSingleFileReady();
+        }
     }
 }
