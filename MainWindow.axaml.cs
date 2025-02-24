@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -13,76 +14,43 @@ namespace FixedLengthFile_Cleaner;
 
 public partial class MainWindow : Window
 {
-    const string DEFAULT_OUTPUT_FILENAME_SUFFIX = "_cleaned"; 
-    
+    const string APPLICATION_NAME = "FixedLengthFile_Cleaner";
 
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
-    
+
     public CleanableFile? SelectedFile { get; set; }
 
     public MainWindow()
     {
         InitializeComponent();
         AddHandler(DragDrop.DropEvent, OnDrop);
-        
+
         Reset();
     }
-    
+
     ///////////
     /// Methods
     ///////////
-
-    private Task CleanTextFile(CleanableFile textFile)
-    {
-        return Task.Run(() =>
-        {
-            try
-            {
-                using (StreamReader input = new StreamReader(textFile.InputFilePath))
-                using (StreamWriter output = new StreamWriter(textFile.OutputFilePath))
-                {
-                    int character;
-                    while ((character = input.Read()) != -1) // Read character by character
-                    {
-                        // Replace quotation marks with spaces
-                        if (character == '"')
-                        {
-                            textFile.NumberOfQuotes++;
-                            character = ' ';
-                        }
-
-                        output.Write((char)character);
-                    }
-                    
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error: {ex.Message}");
-            }
-        });
-    }
-    
     private void Reset()
     {
         // Clear selected file and rest UI to starting state 
         SelectedFile = null;
-        
+
         InputFileTextBox.Text = _defaultInputFileTextBoxContent;
-        
+
         OutputFileTextBox.Text = _defaultOutputFileTextBoxContent;
         OutputFileTextBox.IsEnabled = false;
         OutputFileTextBox.IsReadOnly = true;
-        
+
         OutputFileDialogButton.IsEnabled = false;
-        
+
         CleanButton.IsEnabled = false;
-        
+
         DropzoneDecalPresenter.ShowDropzone();
     }
-    
-    public void SelectFile(string inputFilePath)
+
+    private void SetInputFile(string inputFilePath)
     {
         if (!Path.Exists(inputFilePath))
         {
@@ -90,73 +58,47 @@ public partial class MainWindow : Window
             return;
         }
 
-        // change the output file path so it doesn't overwrite the original
-        string outputFilePath;
-        string extension = Path.GetExtension(inputFilePath);
-        if (extension == String.Empty)
-        {
-            outputFilePath = inputFilePath + DEFAULT_OUTPUT_FILENAME_SUFFIX;
-        }
-        else
-        {
-            // If the file has an extension, insert the suffix before it.
-            outputFilePath = String.Concat(Path.ChangeExtension(inputFilePath, null), DEFAULT_OUTPUT_FILENAME_SUFFIX, extension);
-        }
+        SelectedFile = new CleanableFile(inputFilePath);
 
-        SelectedFile = new CleanableFile
+        Dispatcher.UIThread.Post(() =>
         {
-            InputFilePath = inputFilePath,
-            OutputFilePath = outputFilePath,
-            FileType = inputFilePath.EndsWith("zip") ? CleanableFileType.ZipFile : CleanableFileType.TextFile
-        };
+            // Updating the UI to indicate that a file is selected
+            InputFileTextBox.Text = SelectedFile.InputFilePath;
+            OutputFileTextBox.Text = SelectedFile.OutputFilePath;
+
+            // Let the user change the output filename (InputFileTextBox is already readonly)
+            OutputFileTextBox.IsReadOnly = false;
+            OutputFileTextBox.IsEnabled = true;
+
+            // Move carets to the end, so the end of the file name is in frame
+            InputFileTextBox.SelectionStart = InputFileTextBox.SelectionEnd = InputFileTextBox.Text.Length;
+            OutputFileTextBox.SelectionStart = OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length;
+
+            // Select the default suffix of the output file and give it focus so the user can edit it immediately
+            OutputFileTextBox.SelectionStart = Path.ChangeExtension(SelectedFile.InputFilePath, null).Length;
+            OutputFileTextBox.SelectionEnd = Path.ChangeExtension(SelectedFile.OutputFilePath, null).Length;
+            OutputFileTextBox.Focus();
+
+            // Indicate to user that program is ready to proceed
+            OutputFileDialogButton.IsEnabled = true;
+            CleanButton.IsEnabled = true;
+            CleanButton.Content = "Clean";
+
+            // Update the decal to show what type of file is loaded
+            if (SelectedFile.FileType == CleanableFileType.ZipFile)
+            {
+                DropzoneDecalPresenter.ShowZipArchiveReady();
+            }
+            else
+            {
+                DropzoneDecalPresenter.ShowSingleFileReady();
+            }
+        });
     }
 
-    private void SetInputFile(string inputFilePath)
-    {
-        SelectFile(inputFilePath);
-
-        if (SelectedFile is null)
-        {
-            return;
-        }
-            
-        // Updating the UI to indicate that a file is selected
-        InputFileTextBox.Text = SelectedFile.InputFilePath;
-        OutputFileTextBox.Text = SelectedFile.OutputFilePath;
-        
-        // Let the user change the output filename (InputFileTextBox is already readonly)
-        OutputFileTextBox.IsReadOnly = false;
-        OutputFileTextBox.IsEnabled = true;
-
-        // Move carets to the end, so the end of the file name is in frame
-        InputFileTextBox.SelectionStart = InputFileTextBox.SelectionEnd = InputFileTextBox.Text.Length;
-        OutputFileTextBox.SelectionStart = OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length;
-
-        // Select the default suffix of the output file and give it focus so the user can edit it immediately
-        OutputFileTextBox.SelectionStart = Path.ChangeExtension(SelectedFile.InputFilePath, null).Length;
-        OutputFileTextBox.SelectionEnd = OutputFileTextBox.SelectionStart + DEFAULT_OUTPUT_FILENAME_SUFFIX.Length;
-        OutputFileTextBox.Focus();
-
-        // Indicate to user that program is ready to proceed
-        OutputFileDialogButton.IsEnabled = true;
-        CleanButton.IsEnabled = true;
-        CleanButton.Content = "Clean";
-        
-        // Update the decal to show what type of file is loaded
-        if (SelectedFile.FileType == CleanableFileType.ZipFile)
-        {
-            DropzoneDecalPresenter.ShowZipArchiveReady();
-        }
-        else
-        {
-            DropzoneDecalPresenter.ShowSingleFileReady();
-        }
-    }
-    
     ///////////////////
     /// Event Handlers
     ///////////////////
-    
     private async void HandleInputFileButtonClick(object sender, RoutedEventArgs e)
     {
         var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
@@ -171,11 +113,11 @@ public partial class MainWindow : Window
             SetInputFile(files[0].TryGetLocalPath());
         }
     }
-    
+
     private async void HandleOutputFileButtonClick(object? sender, RoutedEventArgs e)
     {
         if (SelectedFile is null) return;
-        
+
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
             Title = "Set save file location",
@@ -197,25 +139,63 @@ public partial class MainWindow : Window
             return;
         }
 
+        Dispatcher.UIThread.Post(() =>
+        {
+            CleanButton.Content = "Cleaning...";
+            DropzoneDecalPresenter.ShowProcessing();
+        });
+
+        ///////////////////
+        // Clean text file
+        ///////////////////
         if (SelectedFile.FileType == CleanableFileType.TextFile)
         {
             // Update view to indicate cleaning
-            Dispatcher.UIThread.Post(() =>
-            {
-                CleanButton.Content = "Cleaning...";
-                DropzoneDecalPresenter.ShowProcessing();
-            });
-            await CleanTextFile(SelectedFile);
+
+            await CleanableFile.Clean(SelectedFile);
         }
 
+        ///////////////////
+        // Clean zip archive
+        ///////////////////
         if (SelectedFile.FileType == CleanableFileType.ZipFile)
         {
-            // Unpack zip file to temporary location
-            // Clean each file
+            // Get the temporary directory for this OS
+            string pathToTemporaryDirectory = Path.Combine(Path.GetTempPath(), APPLICATION_NAME);
+            Console.WriteLine();
+
+            // Set up temp locations for unzipping and writing cleaned files
+            string pathToUnzippedArchive = Path.Combine(pathToTemporaryDirectory, "original\\");
+            string pathToCleanedFiles = Path.Combine(pathToTemporaryDirectory, "cleaned\\");
+
+            // Prevent pre-existing files from sneaking in
+            if (Directory.Exists(pathToUnzippedArchive)) Directory.Delete(pathToUnzippedArchive, true);
+            if (Directory.Exists(pathToCleanedFiles)) Directory.Delete(pathToCleanedFiles, true);
+
+            // Create directory for cleaned files to be written to
+            Directory.CreateDirectory(pathToCleanedFiles);
+
+            // Decompress the archive and set the files' output target to the cleaned directory
+            Console.WriteLine($"Unzipping {SelectedFile.InputFilePath} to {pathToUnzippedArchive}");
+            ZipFile.ExtractToDirectory(SelectedFile.InputFilePath, pathToUnzippedArchive);
+            var files = Directory.GetFileSystemEntries(pathToUnzippedArchive)
+                .Select(filepath => new CleanableFile(filepath,
+                    Path.Combine(pathToCleanedFiles, filepath.Substring(pathToUnzippedArchive.Length))));
+            foreach (var file in files)
+            {
+                await CleanableFile.Clean(file);
+                SelectedFile.NumberOfQuotes += file.NumberOfQuotes;
+            }
+
             // Repackage zip to output destination
+            if (File.Exists(SelectedFile.OutputFilePath)) File.Delete(SelectedFile.OutputFilePath);
+            ZipFile.CreateFromDirectory(pathToCleanedFiles, SelectedFile.OutputFilePath);
+
             // Delete temporary files
+            Directory.Delete(pathToUnzippedArchive, true);
+            Directory.Delete(pathToCleanedFiles, true);
         }
-        
+
         // Reset view and inform user of how many quotes were replaced.
         Dispatcher.UIThread.Post(() =>
         {
@@ -224,15 +204,14 @@ public partial class MainWindow : Window
             Reset();
         });
     }
-    
-    private void OnDrop(object sender, DragEventArgs e)
+
+    private async void OnDrop(object sender, DragEventArgs e)
     {
         IStorageItem[] files = e.Data.GetFiles().ToArray();
         if (files.Length == 1)
         {
-            Console.WriteLine($"Dropped file {files[0]}");
+            Console.WriteLine($"Dropped file {files[0].TryGetLocalPath()}");
             SetInputFile(files[0].TryGetLocalPath());
         }
     }
-    
 }
