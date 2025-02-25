@@ -9,7 +9,7 @@ they cause an issue when being converted to `.csv`
 
 ## FixedFileLength Cleaner
 I told him I'd make him a simple app that he can use to do this automatically. The features requested were:
-- Select a file to clean
+- Select a file or zip archive to clean
     - Drag and drop preferred
 - Output the fixed file into the same directory.
     - He suggested it could be the same file name with "\_cleaned" suffixed.
