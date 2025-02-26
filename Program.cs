@@ -5,6 +5,8 @@ namespace FixedLengthFile_Cleaner;
 
 class Program
 {
+    public const string ApplicationName = "FixedLengthFile_Cleaner";
+    
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
