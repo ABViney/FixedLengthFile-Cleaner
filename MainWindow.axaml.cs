@@ -14,8 +14,7 @@ namespace FixedLengthFile_Cleaner;
 
 public partial class MainWindow : Window
 {
-    const string APPLICATION_NAME = "FixedLengthFile_Cleaner";
-
+    
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
 
@@ -139,6 +138,8 @@ public partial class MainWindow : Window
             return;
         }
 
+        Configuration config = App.FetchService<Configuration>();
+        
         Dispatcher.UIThread.Post(() =>
         {
             CleanButton.Content = "Cleaning...";
@@ -161,9 +162,8 @@ public partial class MainWindow : Window
         if (SelectedFile.FileType == CleanableFileType.ZipFile)
         {
             // Get the temporary directory for this OS
-            string pathToTemporaryDirectory = Path.Combine(Path.GetTempPath(), APPLICATION_NAME);
-            Console.WriteLine();
-
+            string pathToTemporaryDirectory = config.PathToTemporaryDirectory;
+            
             // Set up temp locations for unzipping and writing cleaned files
             string pathToUnzippedArchive = Path.Combine(pathToTemporaryDirectory, "original\\");
             string pathToCleanedFiles = Path.Combine(pathToTemporaryDirectory, "cleaned\\");
