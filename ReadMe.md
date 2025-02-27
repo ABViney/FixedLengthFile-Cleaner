@@ -34,4 +34,6 @@ Made a portable app that streamlines this process.
 ![Output](docs/5.PNG)
 
 # Todo:
-- Support batch processing of files in a ZIP archive
+- Support for file exclusions
+- Enable configuration overrides
+- Itemized feedback for batch processed items
