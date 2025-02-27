@@ -3,6 +3,7 @@ using System.IO;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using FixedLengthFile_Cleaner.Helpers;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,7 +70,6 @@ public partial class App : Application
     /// </summary>
     private void _DeleteTemporaryResources()
     {
-        Configuration config = FetchService<Configuration>();
-        Directory.Delete(config.PathToTemporaryDirectory, true);
+        ResourceManagement.DeleteTemporaryDirectory();
     }
 }

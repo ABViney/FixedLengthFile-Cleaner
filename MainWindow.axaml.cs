@@ -161,26 +161,13 @@ public partial class MainWindow : Window
         ///////////////////
         if (SelectedFile.FileType == CleanableFileType.ZipFile)
         {
-            // Get the temporary directory for this OS
-            string pathToTemporaryDirectory = config.PathToTemporaryDirectory;
-            
-            // Set up temp locations for unzipping and writing cleaned files
-            string pathToUnzippedArchive = Path.Combine(pathToTemporaryDirectory, "original\\");
-            string pathToCleanedFiles = Path.Combine(pathToTemporaryDirectory, "cleaned\\");
-
-            // Prevent pre-existing files from sneaking in
-            if (Directory.Exists(pathToUnzippedArchive)) Directory.Delete(pathToUnzippedArchive, true);
-            if (Directory.Exists(pathToCleanedFiles)) Directory.Delete(pathToCleanedFiles, true);
-
             // Create directory for cleaned files to be written to
-            Directory.CreateDirectory(pathToCleanedFiles);
+            ResourceManagement.CreateTemporaryDirectory();
 
             // Decompress the archive and set the files' output target to the cleaned directory
-            Console.WriteLine($"Unzipping {SelectedFile.InputFilePath} to {pathToUnzippedArchive}");
-            ZipFile.ExtractToDirectory(SelectedFile.InputFilePath, pathToUnzippedArchive);
-            var files = Directory.GetFileSystemEntries(pathToUnzippedArchive)
-                .Select(filepath => new CleanableFile(filepath,
-                    Path.Combine(pathToCleanedFiles, filepath.Substring(pathToUnzippedArchive.Length))));
+            
+            var files = ResourceManagement.DecompressZipFile(SelectedFile.InputFilePath);
+            
             foreach (var file in files)
             {
                 await CleanableFile.Clean(file);
@@ -188,12 +175,10 @@ public partial class MainWindow : Window
             }
 
             // Repackage zip to output destination
-            if (File.Exists(SelectedFile.OutputFilePath)) File.Delete(SelectedFile.OutputFilePath);
-            ZipFile.CreateFromDirectory(pathToCleanedFiles, SelectedFile.OutputFilePath);
+            ResourceManagement.CompressCleanedFiles(SelectedFile.OutputFilePath);
 
             // Delete temporary files
-            Directory.Delete(pathToUnzippedArchive, true);
-            Directory.Delete(pathToCleanedFiles, true);
+            ResourceManagement.DeleteTemporaryDirectory();
         }
 
         // Reset view and inform user of how many quotes were replaced.

@@ -14,12 +14,13 @@ public class CleanableFile
 {
     const string DefaultOutputFilenameSuffix = "_cleaned"; 
     
-    public string InputFilePath { get; set; }
+    public string InputFilePath { get; }
     public string OutputFilePath { get; set; }
-    public CleanableFileType FileType { get; set; }
+    public CleanableFileType FileType { get; }
     public int NumberOfQuotes { get; set; }
+    public bool Skip { get; set; }
     
-    public CleanableFile(string inputFilePath, string? outputFilePath = null, CleanableFileType? fileType = null)
+    public CleanableFile(string inputFilePath, string? outputFilePath = null, CleanableFileType? fileType = null, bool skip = false)
     {
         InputFilePath = inputFilePath;
         
