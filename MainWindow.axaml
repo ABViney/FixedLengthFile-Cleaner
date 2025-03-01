@@ -48,6 +48,7 @@
                         RelativePanel.AlignRightWithPanel="True" />
             </RelativePanel>
             
+            <controls:StatusBar />
         </StackPanel>
     </Border>
     

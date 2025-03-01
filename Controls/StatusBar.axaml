@@ -1,0 +1,36 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="FixedLengthFile_Cleaner.Controls.StatusBar">
+    
+    <StackPanel>
+        <!-- File-by-file summaries -->
+        <Panel>
+            <Expander>
+                <Expander.Header>Status</Expander.Header>
+                <ScrollViewer>
+                    <StackPanel Name="FilesPanel">
+                        
+                    </StackPanel>
+                </ScrollViewer>
+            </Expander>
+        </Panel>
+        
+        <!-- Current project summary -->
+        <Border>
+            <DockPanel>
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Right">
+                    <TextBlock Name="RatioOfFilesProcessedTextBlock">1/4</TextBlock>
+                    <Rectangle Name="ProgressIcon" Width="24" Fill="Yellow" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*">
+                    <TextBlock Name="CurrentStatusTextBlock" Grid.Column="0">Cleaning diry.txt</TextBlock>
+                    <TextBlock Name="TotalReplacedTextBlock" Grid.Column="1">Replaced 2124</TextBlock>
+                </Grid>
+            </DockPanel>
+        </Border>
+    </StackPanel>
+    
+</UserControl>
