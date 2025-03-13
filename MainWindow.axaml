@@ -11,45 +11,50 @@
         Width="300" CanResize="False" SizeToContent="Height"
         DragDrop.AllowDrop="True">
     
-    <Border Padding="10">
-        <StackPanel Spacing="10">
-            
-            <!-- File selectors -->
-            <StackPanel MaxWidth="300" Spacing="10">
+    <StackPanel>
+        <Border Padding="10">
+            <StackPanel Spacing="10">
                 
-                <!-- Input file selector -->   
-                <DockPanel>
-                    <Button Name="InputFileDialogButton"
-                            Content="..."
-                            Click="HandleInputFileButtonClick"
-                            DockPanel.Dock="Right"/>
-                    <TextBox Name="InputFileTextBox" IsReadOnly="True" IsEnabled="False"/>
-                </DockPanel>
+                <!-- File selectors -->
+                <StackPanel MaxWidth="300" Spacing="10">
+                    
+                    <!-- Input file selector -->   
+                    <DockPanel>
+                        <Button Name="InputFileDialogButton"
+                                Content="..."
+                                Click="HandleInputFileButtonClick"
+                                DockPanel.Dock="Right"/>
+                        <TextBox Name="InputFileTextBox" IsReadOnly="True" IsEnabled="False"/>
+                    </DockPanel>
+                    
+                    <!-- Output file selector -->
+                    <DockPanel>
+                        <Button Name="OutputFileDialogButton"
+                                Content="..."
+                                Click="HandleOutputFileButtonClick"
+                                DockPanel.Dock="Right"/>
+                        <TextBox Name="OutputFileTextBox" IsReadOnly="True" />
+                    </DockPanel>
+                    
+                </StackPanel>
                 
-                <!-- Output file selector -->
-                <DockPanel>
-                    <Button Name="OutputFileDialogButton"
-                            Content="..."
-                            Click="HandleOutputFileButtonClick"
-                            DockPanel.Dock="Right"/>
-                    <TextBox Name="OutputFileTextBox" IsReadOnly="True" />
-                </DockPanel>
+                <!-- (suggested) file drop target -->
+                <controls:DropzoneDecalPresenter Name="DropzoneDecalPresenter" />
                 
+                <!-- Do stuff button -->
+                <RelativePanel>
+                    <Button Name="CleanButton"
+                            Content="Clean"
+                            Click="OnCleanButtonClick"
+                            RelativePanel.AlignRightWithPanel="True" />
+                </RelativePanel>
             </StackPanel>
-            
-            <!-- (suggested) file drop target -->
-            <controls:DropzoneDecalPresenter Name="DropzoneDecalPresenter" />
-            
-            <!-- Do stuff button -->
-            <RelativePanel>
-                <Button Name="CleanButton"
-                        Content="Clean"
-                        Click="OnCleanButtonClick"
-                        RelativePanel.AlignRightWithPanel="True" />
-            </RelativePanel>
-            
-            <controls:StatusBar />
-        </StackPanel>
-    </Border>
+        </Border>
+        
+        <!-- Separator -->
+        <Rectangle Height="1" Fill="#4B4B4B" />
+        
+        <controls:StatusBar Name="StatusBarControl" Padding="2, 3" />
+    </StackPanel>
     
 </Window>
