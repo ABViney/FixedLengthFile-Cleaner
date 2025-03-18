@@ -1,5 +1,5 @@
 ﻿using System;
-using FixedLengthFile_Cleaner.Helpers;
+using System.IO;
 using FixedLengthFile_Cleaner.Models;
 
 namespace FixedLengthFile_Cleaner.Services;
@@ -27,6 +27,16 @@ public class ConfigurationManager
     ///////////
     public Configuration GetConfiguration() => _configuration;
 
+    public static string? ReadConfigurationFile()
+    {
+        if (!File.Exists(PathToConfigurationFile()))
+        {
+            return null;
+        }
+        
+        return File.ReadAllText(PathToConfigurationFile());
+    }
+    
     public void SetExcludePatterns(string[] excludePatterns)
     {
         _configuration = new Configuration
@@ -37,6 +47,13 @@ public class ConfigurationManager
         SaveConfiguration();
     }
 
+    public static void WriteConfigurationFile(string configurationText)
+    {
+        File.WriteAllText(PathToConfigurationFile(), configurationText);
+    }
+
+    // Config.ini is kept in the same location as the executable.
+    public static string PathToConfigurationFile() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
 
     /////////////
     /// Internal
@@ -63,7 +80,7 @@ public class ConfigurationManager
 
     private void ReadConfiguration()
     {
-        var configText = ResourceManagement.ReadConfigurationFile();
+        var configText = ReadConfigurationFile();
         if (configText is null)
         {
             _configuration = CreateDefaultConfiguration();
@@ -96,6 +113,6 @@ public class ConfigurationManager
 
     private void SaveConfiguration()
     {
-        ResourceManagement.WriteConfigurationFile(_configuration.ToString());
+        WriteConfigurationFile(_configuration.ToString());
     }
 }

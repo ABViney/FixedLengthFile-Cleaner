@@ -7,8 +7,8 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using FixedLengthFile_Cleaner.Helpers;
 using FixedLengthFile_Cleaner.Models;
+using FixedLengthFile_Cleaner.Services;
 
 namespace FixedLengthFile_Cleaner;
 
@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
 
-    public CleanableFile? SelectedFile { get; set; }
+    public Cleanable? SelectedFile { get; set; }
 
     public MainWindow()
     {
@@ -57,7 +57,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        SelectedFile = new CleanableFile(inputFilePath);
+        SelectedFile = App.FetchService<CleanableFactory>().Create(inputFilePath);
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -84,7 +84,7 @@ public partial class MainWindow : Window
             CleanButton.Content = "Clean";
 
             // Update the decal to show what type of file is loaded
-            if (SelectedFile.FileType == CleanableFileType.ZipFile)
+            if (SelectedFile.Type == CleanableType.ZipFile)
             {
                 DropzoneDecalPresenter.ShowZipArchiveReady();
                 StatusBarControl.SetStatus("Zip archive ready", null);
@@ -142,6 +142,7 @@ public partial class MainWindow : Window
         }
 
         Configuration config = App.FetchService<Configuration>();
+        Cleaner cleaner = App.FetchService<Cleaner>();
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -153,69 +154,38 @@ public partial class MainWindow : Window
         ///////////////////
         // Clean text file
         ///////////////////
-        if (SelectedFile.FileType == CleanableFileType.TextFile)
+        if (SelectedFile.Type == CleanableType.TextFile)
         {
             // Update view to indicate cleaning
+            Dispatcher.UIThread.Post(() => { StatusBarControl.SetStatus("Cleaning...", null); });
+            await cleaner.Clean(SelectedFile);
             Dispatcher.UIThread.Post(() =>
             {
-                StatusBarControl.SetStatus("Cleaning...", null);
-            });
-            await CleanableFile.Clean(SelectedFile);
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", "1/1");
+                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", "Done");
             });
         }
 
         ///////////////////
         // Clean zip archive
         ///////////////////
-        if (SelectedFile.FileType == CleanableFileType.ZipFile)
+        if (SelectedFile.Type == CleanableType.ZipFile)
         {
-            // Create directory for cleaned files to be written to
-            ResourceManagement.CreateTemporaryDirectory();
-
             // Decompress the archive and set the files' output target to the cleaned directory
             Dispatcher.UIThread.Post(() =>
             {
                 StatusBarControl.SetStatus($"Unzipping {Path.GetFileName(SelectedFile.InputFilePath)}...", null);
             });
-            CleanableFile[] files = [];
-            await Task.Run(() => files = ResourceManagement.DecompressZipFile(SelectedFile.InputFilePath).ToArray());
 
-            for (int i = 0; i < files.Count(); i++)
-            {
-                var file = files[i];
-                Dispatcher.UIThread.Post(() =>
-                {
-                    StatusBarControl.SetStatus($"Cleaning {Path.GetFileName(file.InputFilePath)}", $"{i}/{files.Count()}");
-                });
-                await CleanableFile.Clean(file);
-                SelectedFile.NumberOfQuotes += file.NumberOfQuotes;
-            }
-
-            // Repackage zip to output destination
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarControl.SetStatus($"Zipping {Path.GetFileName(SelectedFile.OutputFilePath)}...", null);
-            });
-            await Task.Run(() => ResourceManagement.CompressCleanedFiles(SelectedFile.OutputFilePath));
-
-            // Delete temporary files
-            Dispatcher.UIThread.Post(() => { StatusBarControl.SetStatus("Deleting temporary files...", null); });
-            await Task.Run(() => ResourceManagement.DeleteTemporaryDirectory());
+            await cleaner.Clean(SelectedFile);
 
             Dispatcher.UIThread.Post(() =>
             {
-                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", $"{files.Count()}/{files.Count()}");
+                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", "Done");
             });
         }
 
         // Reset view and inform user of how many quotes were replaced.
-        Dispatcher.UIThread.Post(() =>
-        {
-            Reset();
-        });
+        Dispatcher.UIThread.Post(() => { Reset(); });
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
