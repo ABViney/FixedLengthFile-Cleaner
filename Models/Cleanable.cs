@@ -4,12 +4,18 @@ using System.Threading.Tasks;
 
 namespace FixedLengthFile_Cleaner.Models;
 
+/// <summary>
+/// Supported filesystem types for <see cref="Cleanable"/>.
+/// </summary>
 public enum CleanableType
 {
     TextFile,
     ZipFile,
 }
 
+/// <summary>
+/// A model of a filesystem resource designated for cleaning.
+/// </summary>
 public class Cleanable
 {
     

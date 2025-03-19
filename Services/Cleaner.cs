@@ -6,8 +6,19 @@ using FixedLengthFile_Cleaner.Models;
 
 namespace FixedLengthFile_Cleaner.Services;
 
+/// <summary>
+/// Template pattern for handling <see cref="Cleanable"/>.
+/// </summary>
 public class Cleaner
 {
+    /// <summary>
+    /// Creates a <see cref="Task"/> that encapsulates the business logic for processing a <see cref="Cleanable"/> based 
+    /// on its <see cref="Cleanable.Type"/>.
+    /// </summary>
+    /// <param name="cleanable">The model to process.</param>
+    /// <returns>A <see cref="Task"/> object.</returns>
+    /// <exception cref="Exception">The <see cref="Cleanable.Type"/> for this <see cref="Cleanable"/> is not
+    /// supported</exception>
     public Task Clean(Cleanable cleanable)
     {
         if (cleanable.Type == CleanableType.TextFile)
@@ -19,7 +30,7 @@ public class Cleaner
         {
             return CleanZipFile(cleanable);
         }
-        
+
         throw new Exception("Unknown type");
     }
 
@@ -27,7 +38,7 @@ public class Cleaner
     {
         throw new NotImplementedException("CleanFolder is not implemented");
     }
-    
+
     private Task CleanTextFile(Cleanable textFile)
     {
         return Task.Run(() =>
@@ -51,7 +62,6 @@ public class Cleaner
 
                         output.Write((char)character);
                     }
-                    
                 }
             }
             catch (Exception ex)
@@ -68,10 +78,10 @@ public class Cleaner
             var tdm = App.FetchService<TemporaryDataManager>();
             string originalFilesFolder = Path.Combine(tdm.PathToTemporaryDirectory(), Path.GetRandomFileName());
             string cleanedFilesFolder = originalFilesFolder + "_cleaned";
-            
+
             Directory.CreateDirectory(cleanedFilesFolder);
-            
-            ZipFile.ExtractToDirectory(zipFile.InputFilePath, originalFilesFolder);;
+
+            ZipFile.ExtractToDirectory(zipFile.InputFilePath, originalFilesFolder);
 
             var cf = App.FetchService<CleanableFactory>();
 
@@ -82,7 +92,7 @@ public class Cleaner
                 await Clean(cleanable);
                 zipFile.NumberOfQuotes += cleanable.NumberOfQuotes;
             }
-            
+
             if (File.Exists(zipFile.OutputFilePath)) File.Delete(zipFile.OutputFilePath);
             ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputFilePath);
             Directory.Delete(originalFilesFolder, true);
