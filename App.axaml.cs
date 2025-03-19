@@ -58,7 +58,7 @@ public partial class App : Application
             //////////////////
             // Event handlers
             //////////////////
-            desktop.Exit += (sender, args) => FetchService<TemporaryDataManager>().DeleteTemporaryDirectory();
+            desktop.Exit += (sender, args) => FetchService<TemporaryDataManager>().Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();
