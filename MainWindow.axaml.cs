@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
 
-    public Cleanable? SelectedFile { get; set; }
+    public Cleanable? SelectedCleanable { get; set; }
 
     public MainWindow()
     {
@@ -33,15 +33,15 @@ public partial class MainWindow : Window
     private void Reset()
     {
         // Clear selected file and rest UI to starting state 
-        SelectedFile = null;
+        SelectedCleanable = null;
 
-        InputFileTextBox.Text = _defaultInputFileTextBoxContent;
+        InputPathTextBox.Text = _defaultInputFileTextBoxContent;
 
-        OutputFileTextBox.Text = _defaultOutputFileTextBoxContent;
-        OutputFileTextBox.IsEnabled = false;
-        OutputFileTextBox.IsReadOnly = true;
+        OutputPathTextBox.Text = _defaultOutputFileTextBoxContent;
+        OutputPathTextBox.IsEnabled = false;
+        OutputPathTextBox.IsReadOnly = true;
 
-        OutputFileDialogButton.IsEnabled = false;
+        OutputPathDialogButton.IsEnabled = false;
 
         CleanButton.IsEnabled = false;
         CleanButton.Content = "Clean";
@@ -49,42 +49,47 @@ public partial class MainWindow : Window
         DropzoneDecalPresenter.ShowDropzone();
     }
 
-    private void SetInputFile(string inputFilePath)
+    private void SetInputFile(string inputPath)
     {
-        if (!Path.Exists(inputFilePath))
+        if (!Path.Exists(inputPath))
         {
             Console.WriteLine("File does not exist");
             return;
         }
 
-        SelectedFile = App.FetchService<CleanableFactory>().Create(inputFilePath);
+        SelectedCleanable = App.FetchService<CleanableFactory>().Create(inputPath);
 
         Dispatcher.UIThread.Post(() =>
         {
             // Updating the UI to indicate that a file is selected
-            InputFileTextBox.Text = SelectedFile.InputPath;
-            OutputFileTextBox.Text = SelectedFile.OutputPath;
+            InputPathTextBox.Text = SelectedCleanable.InputPath;
+            OutputPathTextBox.Text = SelectedCleanable.OutputPath;
 
             // Let the user change the output filename (InputFileTextBox is already readonly)
-            OutputFileTextBox.IsReadOnly = false;
-            OutputFileTextBox.IsEnabled = true;
+            OutputPathTextBox.IsReadOnly = false;
+            OutputPathTextBox.IsEnabled = true;
 
             // Move carets to the end, so the end of the file name is in frame
-            InputFileTextBox.SelectionStart = InputFileTextBox.SelectionEnd = InputFileTextBox.Text.Length;
-            OutputFileTextBox.SelectionStart = OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length;
+            InputPathTextBox.SelectionStart = InputPathTextBox.SelectionEnd = InputPathTextBox.Text.Length;
+            OutputPathTextBox.SelectionStart = OutputPathTextBox.SelectionEnd = OutputPathTextBox.Text.Length;
 
             // Select the default suffix of the output file and give it focus so the user can edit it immediately
-            OutputFileTextBox.SelectionStart = Path.ChangeExtension(SelectedFile.InputPath, null).Length;
-            OutputFileTextBox.SelectionEnd = Path.ChangeExtension(SelectedFile.OutputPath, null).Length;
-            OutputFileTextBox.Focus();
+            OutputPathTextBox.SelectionStart = Path.ChangeExtension(SelectedCleanable.InputPath, null).Length;
+            OutputPathTextBox.SelectionEnd = Path.ChangeExtension(SelectedCleanable.OutputPath, null).Length;
+            OutputPathTextBox.Focus();
 
             // Indicate to user that program is ready to proceed
-            OutputFileDialogButton.IsEnabled = true;
+            OutputPathDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
             CleanButton.Content = "Clean";
 
             // Update the decal to show what type of file is loaded
-            if (SelectedFile.Type == CleanableType.ZipFile)
+            if (SelectedCleanable.Type == CleanableType.Folder)
+            {
+                DropzoneDecalPresenter.ShowFolderReady();
+                StatusBarControl.SetStatus("Folder ready", null);
+            }
+            else if (SelectedCleanable.Type == CleanableType.ZipFile)
             {
                 DropzoneDecalPresenter.ShowZipArchiveReady();
                 StatusBarControl.SetStatus("Zip archive ready", null);
@@ -100,8 +105,9 @@ public partial class MainWindow : Window
     ///////////////////
     /// Event Handlers
     ///////////////////
-    private async void HandleInputFileButtonClick(object sender, RoutedEventArgs e)
+    private async void HandleInputPathButtonClick(object sender, RoutedEventArgs e)
     {
+        // Note: Default picker does not support selecting both folders and files.
         var files = await this.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions()
         {
             Title = "Select input file",
@@ -115,25 +121,26 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void HandleOutputFileButtonClick(object? sender, RoutedEventArgs e)
+    private async void HandleOutputPathButtonClick(object? sender, RoutedEventArgs e)
     {
-        if (SelectedFile is null) return;
+        // Note: Default picker does not support selecting both folders and files.
+        if (SelectedCleanable is null) return;
 
         var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions()
         {
             Title = "Set save file location",
             ShowOverwritePrompt = true,
-            SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(SelectedFile.InputPath)
+            SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(SelectedCleanable.InputPath)
         });
 
         if (file is null) return;
 
-        SelectedFile.OutputPath = file.TryGetLocalPath() ?? String.Empty;
+        SelectedCleanable.OutputPath = file.TryGetLocalPath() ?? String.Empty;
     }
 
     private async void OnCleanButtonClick(object sender, RoutedEventArgs e)
     {
-        if (!Path.Exists(SelectedFile.InputPath))
+        if (!Path.Exists(SelectedCleanable.InputPath))
         {
             Console.WriteLine("Error: File does not exist");
             Reset();
@@ -151,50 +158,30 @@ public partial class MainWindow : Window
             DropzoneDecalPresenter.ShowProcessing();
         });
 
-        ///////////////////
-        // Clean text file
-        ///////////////////
-        if (SelectedFile.Type == CleanableType.TextFile)
+        // Decompress the archive and set the files' output target to the cleaned directory
+        Dispatcher.UIThread.Post(() =>
         {
-            // Update view to indicate cleaning
-            Dispatcher.UIThread.Post(() => { StatusBarControl.SetStatus("Cleaning...", null); });
-            await cleaner.Clean(SelectedFile);
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", "Done");
-            });
-        }
+            StatusBarControl.SetStatus($"Processing {Path.GetFileName(SelectedCleanable.InputPath)}...", null);
+        });
 
-        ///////////////////
-        // Clean zip archive
-        ///////////////////
-        if (SelectedFile.Type == CleanableType.ZipFile)
-        {
-            // Decompress the archive and set the files' output target to the cleaned directory
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarControl.SetStatus($"Unzipping {Path.GetFileName(SelectedFile.InputPath)}...", null);
-            });
-
-            await cleaner.Clean(SelectedFile);
-
-            Dispatcher.UIThread.Post(() =>
-            {
-                StatusBarControl.SetStatus($"Replaced {SelectedFile.NumberOfQuotes}", "Done");
-            });
-        }
-
+        await cleaner.Clean(SelectedCleanable);
+        
         // Reset view and inform user of how many quotes were replaced.
-        Dispatcher.UIThread.Post(() => { Reset(); });
+        Dispatcher.UIThread.Post(() =>
+        {
+            StatusBarControl.SetStatus($"Replaced {SelectedCleanable.NumberOfQuotes}", "Done");
+            Reset();
+        });
+
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
     {
-        IStorageItem[] files = e.Data.GetFiles().ToArray();
-        if (files.Length == 1)
+        IStorageItem[] storageItems = e.Data.GetFiles().ToArray();
+        if (storageItems.Length == 1)
         {
-            Console.WriteLine($"Dropped file {files[0].TryGetLocalPath()}");
-            SetInputFile(files[0].TryGetLocalPath());
+            Console.WriteLine($"Dropped file {storageItems[0].TryGetLocalPath()}");
+            SetInputFile(storageItems[0].TryGetLocalPath());
         }
     }
 }

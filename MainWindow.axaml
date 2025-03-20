@@ -20,20 +20,20 @@
                     
                     <!-- Input file selector -->   
                     <DockPanel>
-                        <Button Name="InputFileDialogButton"
+                        <Button Name="InputPathDialogButton"
                                 Content="..."
-                                Click="HandleInputFileButtonClick"
+                                Click="HandleInputPathButtonClick"
                                 DockPanel.Dock="Right"/>
-                        <TextBox Name="InputFileTextBox" IsReadOnly="True" IsEnabled="False"/>
+                        <TextBox Name="InputPathTextBox" IsReadOnly="True" IsEnabled="False"/>
                     </DockPanel>
                     
                     <!-- Output file selector -->
                     <DockPanel>
-                        <Button Name="OutputFileDialogButton"
+                        <Button Name="OutputPathDialogButton"
                                 Content="..."
-                                Click="HandleOutputFileButtonClick"
+                                Click="HandleOutputPathButtonClick"
                                 DockPanel.Dock="Right"/>
-                        <TextBox Name="OutputFileTextBox" IsReadOnly="True" />
+                        <TextBox Name="OutputPathTextBox" IsReadOnly="True" />
                     </DockPanel>
                     
                 </StackPanel>

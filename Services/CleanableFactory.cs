@@ -41,7 +41,7 @@ public class CleanableFactory
         CleanableType type;
         if (Directory.Exists(inputFilePath))
         {
-            throw new NotImplementedException("Cleaning folders is not currently supported.");
+            type = CleanableType.Folder;
         }
         else if (extension == ".zip")
         {
