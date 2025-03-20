@@ -23,6 +23,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         AddHandler(DragDrop.DropEvent, OnDrop);
+        OutputPathTextBox.TextChanged += HandleOutputPathTextBoxTextChanged;
 
         Reset();
     }
@@ -136,6 +137,12 @@ public partial class MainWindow : Window
         if (file is null) return;
 
         SelectedCleanable.OutputPath = file.TryGetLocalPath() ?? String.Empty;
+    }
+
+    private async void HandleOutputPathTextBoxTextChanged(object? sender, TextChangedEventArgs e)
+    {
+        if (SelectedCleanable is null || String.IsNullOrEmpty(OutputPathTextBox.Text)) return;
+        SelectedCleanable.OutputPath = OutputPathTextBox.Text;
     }
 
     private async void OnCleanButtonClick(object sender, RoutedEventArgs e)
