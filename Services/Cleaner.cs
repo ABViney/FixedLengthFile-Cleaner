@@ -21,6 +21,11 @@ public class Cleaner
     /// supported</exception>
     public Task Clean(Cleanable cleanable)
     {
+        if (cleanable.Type == CleanableType.Folder)
+        {
+            return CleanFolder(cleanable);
+        }
+        
         if (cleanable.Type == CleanableType.TextFile)
         {
             return CleanTextFile(cleanable);
@@ -36,7 +41,27 @@ public class Cleaner
 
     private Task CleanFolder(Cleanable folder)
     {
-        throw new NotImplementedException("CleanFolder is not implemented");
+        return Task.Run(async () =>
+        {
+            var cf = App.FetchService<CleanableFactory>();
+            
+            Cleanable[] cleanables;
+            if (folder.InputPath == folder.OutputPath)
+            {
+                cleanables = cf.CreateFromFolder(folder.InputPath, null);
+            }
+            else
+            {
+                Directory.CreateDirectory(folder.OutputPath);
+                cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
+            }
+
+            foreach (var cleanable in cleanables)
+            {
+                await Clean(cleanable);
+                folder.NumberOfQuotes += cleanable.NumberOfQuotes;
+            }
+        });
     }
 
     private Task CleanTextFile(Cleanable textFile)
