@@ -47,8 +47,8 @@ public class Cleaner
             // Todo: Refactor to scan over a string rather than a single character
             try
             {
-                using (StreamReader input = new StreamReader(textFile.InputFilePath))
-                using (StreamWriter output = new StreamWriter(textFile.OutputFilePath))
+                using (StreamReader input = new StreamReader(textFile.InputPath))
+                using (StreamWriter output = new StreamWriter(textFile.OutputPath))
                 {
                     int character;
                     while ((character = input.Read()) != -1) // Read character by character
@@ -81,7 +81,7 @@ public class Cleaner
 
             Directory.CreateDirectory(cleanedFilesFolder);
 
-            ZipFile.ExtractToDirectory(zipFile.InputFilePath, originalFilesFolder);
+            ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder);
 
             var cf = App.FetchService<CleanableFactory>();
 
@@ -93,8 +93,8 @@ public class Cleaner
                 zipFile.NumberOfQuotes += cleanable.NumberOfQuotes;
             }
 
-            if (File.Exists(zipFile.OutputFilePath)) File.Delete(zipFile.OutputFilePath);
-            ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputFilePath);
+            if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
+            ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
             Directory.Delete(originalFilesFolder, true);
             Directory.Delete(cleanedFilesFolder, true);
         });

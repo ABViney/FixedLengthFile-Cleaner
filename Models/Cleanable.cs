@@ -9,6 +9,7 @@ namespace FixedLengthFile_Cleaner.Models;
 /// </summary>
 public enum CleanableType
 {
+    Folder,
     TextFile,
     ZipFile,
 }
@@ -19,15 +20,15 @@ public enum CleanableType
 public class Cleanable
 {
     
-    public string InputFilePath { get; }
-    public string OutputFilePath { get; set; }
+    public string InputPath { get; }
+    public string OutputPath { get; set; }
     public CleanableType Type { get; }
     public int NumberOfQuotes { get; set; }
     
-    public Cleanable(string inputFilePath, string outputFilePath, CleanableType type)
+    public Cleanable(string inputPath, string outputPath, CleanableType type)
     {
-        InputFilePath = inputFilePath;
-        OutputFilePath = outputFilePath;
+        InputPath = inputPath;
+        OutputPath = outputPath;
         Type = type;
     }
 }

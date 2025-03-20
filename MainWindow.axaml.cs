@@ -62,8 +62,8 @@ public partial class MainWindow : Window
         Dispatcher.UIThread.Post(() =>
         {
             // Updating the UI to indicate that a file is selected
-            InputFileTextBox.Text = SelectedFile.InputFilePath;
-            OutputFileTextBox.Text = SelectedFile.OutputFilePath;
+            InputFileTextBox.Text = SelectedFile.InputPath;
+            OutputFileTextBox.Text = SelectedFile.OutputPath;
 
             // Let the user change the output filename (InputFileTextBox is already readonly)
             OutputFileTextBox.IsReadOnly = false;
@@ -74,8 +74,8 @@ public partial class MainWindow : Window
             OutputFileTextBox.SelectionStart = OutputFileTextBox.SelectionEnd = OutputFileTextBox.Text.Length;
 
             // Select the default suffix of the output file and give it focus so the user can edit it immediately
-            OutputFileTextBox.SelectionStart = Path.ChangeExtension(SelectedFile.InputFilePath, null).Length;
-            OutputFileTextBox.SelectionEnd = Path.ChangeExtension(SelectedFile.OutputFilePath, null).Length;
+            OutputFileTextBox.SelectionStart = Path.ChangeExtension(SelectedFile.InputPath, null).Length;
+            OutputFileTextBox.SelectionEnd = Path.ChangeExtension(SelectedFile.OutputPath, null).Length;
             OutputFileTextBox.Focus();
 
             // Indicate to user that program is ready to proceed
@@ -123,17 +123,17 @@ public partial class MainWindow : Window
         {
             Title = "Set save file location",
             ShowOverwritePrompt = true,
-            SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(SelectedFile.InputFilePath)
+            SuggestedStartLocation = await StorageProvider.TryGetFolderFromPathAsync(SelectedFile.InputPath)
         });
 
         if (file is null) return;
 
-        SelectedFile.OutputFilePath = file.TryGetLocalPath() ?? String.Empty;
+        SelectedFile.OutputPath = file.TryGetLocalPath() ?? String.Empty;
     }
 
     private async void OnCleanButtonClick(object sender, RoutedEventArgs e)
     {
-        if (!Path.Exists(SelectedFile.InputFilePath))
+        if (!Path.Exists(SelectedFile.InputPath))
         {
             Console.WriteLine("Error: File does not exist");
             Reset();
@@ -173,7 +173,7 @@ public partial class MainWindow : Window
             // Decompress the archive and set the files' output target to the cleaned directory
             Dispatcher.UIThread.Post(() =>
             {
-                StatusBarControl.SetStatus($"Unzipping {Path.GetFileName(SelectedFile.InputFilePath)}...", null);
+                StatusBarControl.SetStatus($"Unzipping {Path.GetFileName(SelectedFile.InputPath)}...", null);
             });
 
             await cleaner.Clean(SelectedFile);
