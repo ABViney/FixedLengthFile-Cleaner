@@ -21,6 +21,21 @@ public partial class DropzoneDecalPresenter : UserControl
         {
             FileDropzoneDecalImage.IsVisible = true;
             
+            FolderReadyDecalImage.IsVisible = false;
+            SingleFileReadyDecalImage.IsVisible = false;
+            ZipArchiveReadyDecalImage.IsVisible = false;
+            ProcessingDecalImage.IsVisible = false;
+        });
+    }
+
+    public void ShowFolderReady()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            FileDropzoneDecalImage.IsVisible = false;
+            
+            FolderReadyDecalImage.IsVisible = true;
+            
             SingleFileReadyDecalImage.IsVisible = false;
             ZipArchiveReadyDecalImage.IsVisible = false;
             ProcessingDecalImage.IsVisible = false;
@@ -29,30 +44,42 @@ public partial class DropzoneDecalPresenter : UserControl
     
     public void ShowSingleFileReady()
     {
-        FileDropzoneDecalImage.IsVisible = false;
-        
-        SingleFileReadyDecalImage.IsVisible = true;
-        
-        ZipArchiveReadyDecalImage.IsVisible = false;
-        ProcessingDecalImage.IsVisible = false;
+        Dispatcher.UIThread.Post(() =>
+        {
+            FileDropzoneDecalImage.IsVisible = false;
+            FolderReadyDecalImage.IsVisible = false;
+            
+            SingleFileReadyDecalImage.IsVisible = true;
+            
+            ZipArchiveReadyDecalImage.IsVisible = false;
+            ProcessingDecalImage.IsVisible = false;
+        });
     }
     
     public void ShowZipArchiveReady()
     {
-        FileDropzoneDecalImage.IsVisible = false;
-        SingleFileReadyDecalImage.IsVisible = false;
-        
-        ZipArchiveReadyDecalImage.IsVisible = true;
-        
-        ProcessingDecalImage.IsVisible = false;
+        Dispatcher.UIThread.Post(() =>
+        {
+            FileDropzoneDecalImage.IsVisible = false;
+            FolderReadyDecalImage.IsVisible = false;
+            SingleFileReadyDecalImage.IsVisible = false;
+            
+            ZipArchiveReadyDecalImage.IsVisible = true;
+            
+            ProcessingDecalImage.IsVisible = false;
+        });
     }
     
     public void ShowProcessing()
     {
-        FileDropzoneDecalImage.IsVisible = false;
-        SingleFileReadyDecalImage.IsVisible = false;
-        ZipArchiveReadyDecalImage.IsVisible = false;
-        
-        ProcessingDecalImage.IsVisible = true;
+        Dispatcher.UIThread.Post(() =>
+        {
+            FileDropzoneDecalImage.IsVisible = false;
+            FolderReadyDecalImage.IsVisible = false;
+            SingleFileReadyDecalImage.IsVisible = false;
+            ZipArchiveReadyDecalImage.IsVisible = false;
+            
+            ProcessingDecalImage.IsVisible = true;
+        });
     }
 }
