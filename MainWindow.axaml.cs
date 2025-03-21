@@ -163,6 +163,8 @@ public partial class MainWindow : Window
             CleanButton.Content = "Cleaning...";
             CleanButton.IsEnabled = false;
             DropzoneDecalPresenter.ShowProcessing();
+            OutputPathTextBox.IsEnabled = false;
+            OutputPathDialogButton.IsEnabled = false;
         });
 
         // Decompress the archive and set the files' output target to the cleaned directory
