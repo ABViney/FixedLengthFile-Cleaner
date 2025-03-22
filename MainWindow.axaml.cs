@@ -136,7 +136,7 @@ public partial class MainWindow : Window
 
         if (file is null) return;
 
-        SelectedCleanable.OutputPath = file.TryGetLocalPath() ?? String.Empty;
+        OutputPathTextBox.Text = file.TryGetLocalPath() ?? string.Empty;
     }
 
     private async void HandleOutputPathTextBoxTextChanged(object? sender, TextChangedEventArgs e)
