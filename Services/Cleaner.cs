@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using FixedLengthFile_Cleaner.Models;
+using Serilog;
 
 namespace FixedLengthFile_Cleaner.Services;
 
@@ -25,7 +26,7 @@ public class Cleaner
         {
             return CleanFolder(cleanable);
         }
-        
+
         if (cleanable.Type == CleanableType.TextFile)
         {
             return CleanTextFile(cleanable);
@@ -44,7 +45,9 @@ public class Cleaner
         return Task.Run(async () =>
         {
             var cf = App.FetchService<CleanableFactory>();
-            
+
+            Log.Logger.Information("Creating collection from folder contents...");
+
             Cleanable[] cleanables;
             if (folder.InputPath == folder.OutputPath)
             {
@@ -68,6 +71,8 @@ public class Cleaner
     {
         return Task.Run(() =>
         {
+            Log.Logger.Information($"Cleaning file {textFile.InputPath}...");
+
             // Todo: Update this method to use the configuration to set the find/replace characters
             // Todo: Refactor to scan over a string rather than a single character
             try
@@ -88,10 +93,13 @@ public class Cleaner
                         output.Write((char)character);
                     }
                 }
+
+                Log.Logger.Information(
+                    $"Successfully cleaned {textFile.InputPath}. Output written to {textFile.OutputPath}. {textFile.NumberOfQuotes} replacements made.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Log.Logger.Error(ex, $"Error occured while cleaning {textFile.InputPath}:");
             }
         });
     }
@@ -104,9 +112,21 @@ public class Cleaner
             string originalFilesFolder = Path.Combine(tdm.PathToTemporaryDirectory(), Path.GetRandomFileName());
             string cleanedFilesFolder = originalFilesFolder + "_cleaned";
 
+            Log.Logger.Information($"Creating temporary folder at: {cleanedFilesFolder}");
+
             Directory.CreateDirectory(cleanedFilesFolder);
 
-            ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder);
+            Log.Logger.Information($"Unzipping file to {originalFilesFolder}");
+
+            try
+            {
+                ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder);
+                Log.Logger.Information($"Successfully unpacked {zipFile.InputPath}");
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, $"Error while unpacking {zipFile.InputPath}");
+            }
 
             var cf = App.FetchService<CleanableFactory>();
 
@@ -116,9 +136,30 @@ public class Cleaner
             zipFile.NumberOfQuotes += folder.NumberOfQuotes;
 
             if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
-            ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
-            Directory.Delete(originalFilesFolder, true);
-            Directory.Delete(cleanedFilesFolder, true);
+
+            Log.Logger.Information($"Zipping files...");
+
+            try
+            {
+                ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder}:");
+            }
+
+            Log.Logger.Information($"Successfully zipped {originalFilesFolder} to {zipFile.OutputPath}.");
+
+            try
+            {
+                Log.Logger.Information($"Deleting temporary directories...");
+                Directory.Delete(originalFilesFolder, true);
+                Directory.Delete(cleanedFilesFolder, true);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, $"Error occured while deleting temporary directories:");
+            }
         });
     }
 }

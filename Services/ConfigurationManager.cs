@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using FixedLengthFile_Cleaner.Models;
+using Serilog;
 
 namespace FixedLengthFile_Cleaner.Services;
 
@@ -29,16 +30,22 @@ public class ConfigurationManager
 
     public static string? ReadConfigurationFile()
     {
+        Log.Logger.Information("Reading configuration file.");
+        
         if (!File.Exists(PathToConfigurationFile()))
         {
+            Log.Logger.Warning("Could not find configuration file.");
             return null;
         }
         
+        Log.Logger.Information("Found configuration file.");
         return File.ReadAllText(PathToConfigurationFile());
     }
     
     public void SetExcludePatterns(string[] excludePatterns)
     {
+        Log.Logger.Information($"Setting exclude patterns: {String.Join(", ", excludePatterns)}");
+        
         _configuration = new Configuration
         {
             ExcludePatterns = excludePatterns,
@@ -83,6 +90,7 @@ public class ConfigurationManager
         var configText = ReadConfigurationFile();
         if (configText is null)
         {
+            Log.Logger.Information("Creating default configuration.");
             _configuration = CreateDefaultConfiguration();
             SaveConfiguration();
         }
@@ -93,7 +101,13 @@ public class ConfigurationManager
             foreach (string field in fields)
             {
                 string[] keyvalue = field.Split('=');
-                if (keyvalue.Length != 2) continue;
+                
+                if (keyvalue.Length != 2)
+                {
+                    Log.Logger.Warning($"Invalid configuration field: {field}");
+                    continue;
+                }
+                
                 switch (keyvalue[0])
                 {
                     case nameof(Configuration.ExcludePatterns):
@@ -108,11 +122,20 @@ public class ConfigurationManager
             };
         }
 
-        Console.WriteLine($"Config loaded:\r\n" + _configuration.ToString());
+        Log.Logger.Information("Config loaded.");
     }
 
     private void SaveConfiguration()
     {
-        WriteConfigurationFile(_configuration.ToString());
+        Log.Logger.Information("Saving configuration file.");
+        try
+        {
+            WriteConfigurationFile(_configuration.ToString());
+            Log.Logger.Information("Configuration saved.");
+        }
+        catch (Exception ex)
+        {
+            Log.Logger.Warning(ex, "Failed to save configuration file.");
+        }
     }
 }

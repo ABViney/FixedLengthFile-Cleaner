@@ -6,6 +6,7 @@ using Avalonia.Markup.Xaml;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 
 namespace FixedLengthFile_Cleaner;
@@ -45,14 +46,18 @@ public partial class App : Application
             // Services
             ////////////
             {
+                Log.Logger.Information("Setting up services");
+                
                 var services = new ServiceCollection();
-
+                
                 services.AddSingleton<CleanableFactory>();
                 services.AddSingleton<Cleaner>();
                 services.AddSingleton<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
                 services.AddSingleton<TemporaryDataManager>();
 
                 Services = services.BuildServiceProvider();
+                
+                Log.Logger.Information("Services configured");
             }
 
             //////////////////

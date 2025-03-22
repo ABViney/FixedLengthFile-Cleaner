@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
+using Serilog;
 
 namespace FixedLengthFile_Cleaner;
 
@@ -52,9 +53,11 @@ public partial class MainWindow : Window
 
     private void SetInputFile(string inputPath)
     {
+        Log.Logger.Information($"Input set to {inputPath}");
+        
         if (!Path.Exists(inputPath))
         {
-            Console.WriteLine("File does not exist");
+            Log.Logger.Error($"{inputPath} does not exist");
             return;
         }
 
@@ -87,16 +90,22 @@ public partial class MainWindow : Window
             // Update the decal to show what type of file is loaded
             if (SelectedCleanable.Type == CleanableType.Folder)
             {
+                Log.Logger.Information("Folder selected");
+                
                 DropzoneDecalPresenter.ShowFolderReady();
                 StatusBarControl.SetStatus("Folder ready", null);
             }
             else if (SelectedCleanable.Type == CleanableType.ZipFile)
             {
+                Log.Logger.Information("Zip file selected");
+                
                 DropzoneDecalPresenter.ShowZipArchiveReady();
                 StatusBarControl.SetStatus("Zip archive ready", null);
             }
             else
             {
+                Log.Logger.Information("Text file selected");
+                
                 DropzoneDecalPresenter.ShowSingleFileReady();
                 StatusBarControl.SetStatus("File ready", null);
             }
@@ -143,13 +152,15 @@ public partial class MainWindow : Window
     {
         if (SelectedCleanable is null || String.IsNullOrEmpty(OutputPathTextBox.Text)) return;
         SelectedCleanable.OutputPath = OutputPathTextBox.Text;
+        
+        Log.Logger.Information($"Output path changed to {SelectedCleanable.OutputPath}");
     }
 
     private async void OnCleanButtonClick(object sender, RoutedEventArgs e)
     {
         if (!Path.Exists(SelectedCleanable.InputPath))
         {
-            Console.WriteLine("Error: File does not exist");
+            Log.Logger.Error($"Error: {SelectedCleanable.InputPath} does not exist.");
             Reset();
             StatusBarControl.ResetStatus();
             return;
@@ -173,7 +184,17 @@ public partial class MainWindow : Window
             StatusBarControl.SetStatus($"Processing {Path.GetFileName(SelectedCleanable.InputPath)}...", null);
         });
 
-        await cleaner.Clean(SelectedCleanable);
+        try
+        {
+            Log.Logger.Information($"Cleaning {SelectedCleanable.InputPath}...");
+            await cleaner.Clean(SelectedCleanable);
+            Log.Logger.Information($"Finished cleaning {SelectedCleanable.InputPath}.");
+        }
+        catch (Exception ex)
+        {
+            Log.Logger.Error(ex, $"Error while cleaning {SelectedCleanable.InputPath}:");
+        }
+        
         
         // Reset view and inform user of how many quotes were replaced.
         Dispatcher.UIThread.Post(() =>
@@ -182,6 +203,7 @@ public partial class MainWindow : Window
             Reset();
         });
 
+        Log.Logger.Information("Cleaning process completed.");
     }
 
     private async void OnDrop(object sender, DragEventArgs e)
@@ -189,7 +211,7 @@ public partial class MainWindow : Window
         IStorageItem[] storageItems = e.Data.GetFiles().ToArray();
         if (storageItems.Length == 1)
         {
-            Console.WriteLine($"Dropped file {storageItems[0].TryGetLocalPath()}");
+            Log.Logger.Information($"File dropped into application: {storageItems[0].TryGetLocalPath()}");
             SetInputFile(storageItems[0].TryGetLocalPath());
         }
     }
