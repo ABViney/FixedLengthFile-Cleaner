@@ -110,13 +110,10 @@ public class Cleaner
 
             var cf = App.FetchService<CleanableFactory>();
 
-            Cleanable[] cleanables = cf.CreateFromFolder(originalFilesFolder, cleanedFilesFolder);
+            Cleanable folder = cf.Create(originalFilesFolder, cleanedFilesFolder);
 
-            foreach (var cleanable in cleanables)
-            {
-                await Clean(cleanable);
-                zipFile.NumberOfQuotes += cleanable.NumberOfQuotes;
-            }
+            await Clean(folder);
+            zipFile.NumberOfQuotes += folder.NumberOfQuotes;
 
             if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
             ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
