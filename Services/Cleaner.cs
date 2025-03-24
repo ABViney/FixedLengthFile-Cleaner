@@ -12,6 +12,8 @@ namespace FixedLengthFile_Cleaner.Services;
 /// </summary>
 public class Cleaner
 {
+    private StatusMessenger.StatusMessenger _statusMessenger = StatusMessenger.StatusMessenger.GetInstance();
+    
     /// <summary>
     /// Creates a <see cref="Task"/> that encapsulates the business logic for processing a <see cref="Cleanable"/> based 
     /// on its <see cref="Cleanable.Type"/>.
@@ -59,8 +61,11 @@ public class Cleaner
                 cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
             }
 
+            int i = 1;
             foreach (var cleanable in cleanables)
             {
+                _statusMessenger.SetStatus($"Cleaning {Path.GetFileName(cleanable.InputPath)}...");
+                _statusMessenger.SetProgress($"{i++}/{cleanables.Length}");
                 await Clean(cleanable);
                 folder.NumberOfQuotes += cleanable.NumberOfQuotes;
             }
@@ -116,6 +121,7 @@ public class Cleaner
 
             Directory.CreateDirectory(cleanedFilesFolder);
 
+            _statusMessenger.SetStatus("Extracting files...");
             Log.Logger.Information($"Unzipping file to {originalFilesFolder}");
 
             try
@@ -137,18 +143,20 @@ public class Cleaner
 
             if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
 
+            _statusMessenger.SetStatus("Zipping files...");
             Log.Logger.Information($"Zipping files...");
 
             try
             {
                 ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
+                Log.Logger.Information($"Successfully zipped {originalFilesFolder} to {zipFile.OutputPath}.");
             }
             catch (Exception ex)
             {
                 Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder}:");
             }
 
-            Log.Logger.Information($"Successfully zipped {originalFilesFolder} to {zipFile.OutputPath}.");
+            _statusMessenger.SetStatus("Deleting temporary files...");
 
             try
             {

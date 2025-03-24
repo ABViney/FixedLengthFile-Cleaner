@@ -9,6 +9,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
+using FixedLengthFile_Cleaner.Services.StatusMessenger;
 using Serilog;
 
 namespace FixedLengthFile_Cleaner;
@@ -18,6 +19,8 @@ public partial class MainWindow : Window
     private string _defaultInputFileTextBoxContent = "Input file goes here";
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
 
+    private StatusMessenger _statusMessenger;
+
     public Cleanable? SelectedCleanable { get; set; }
 
     public MainWindow()
@@ -25,6 +28,10 @@ public partial class MainWindow : Window
         InitializeComponent();
         AddHandler(DragDrop.DropEvent, OnDrop);
         OutputPathTextBox.TextChanged += HandleOutputPathTextBoxTextChanged;
+
+        _statusMessenger = App.FetchService<StatusMessenger>();
+        _statusMessenger.StatusChanged += StatusBarControl.OnStatusChanged;
+        _statusMessenger.ProgressChanged += StatusBarControl.OnProgressChanged;
 
         Reset();
     }
@@ -34,27 +41,31 @@ public partial class MainWindow : Window
     ///////////
     private void Reset()
     {
-        // Clear selected file and rest UI to starting state 
-        SelectedCleanable = null;
+        Dispatcher.UIThread.Post(() =>
+        {
+            // Clear selected file and rest UI to starting state 
+            SelectedCleanable = null;
 
-        InputPathTextBox.Text = _defaultInputFileTextBoxContent;
+            InputPathTextBox.Text = _defaultInputFileTextBoxContent;
 
-        OutputPathTextBox.Text = _defaultOutputFileTextBoxContent;
-        OutputPathTextBox.IsEnabled = false;
-        OutputPathTextBox.IsReadOnly = true;
+            OutputPathTextBox.Text = _defaultOutputFileTextBoxContent;
+            OutputPathTextBox.IsEnabled = false;
+            OutputPathTextBox.IsReadOnly = true;
 
-        OutputPathDialogButton.IsEnabled = false;
+            OutputPathDialogButton.IsEnabled = false;
 
-        CleanButton.IsEnabled = false;
-        CleanButton.Content = "Clean";
+            CleanButton.IsEnabled = false;
+            CleanButton.Content = "Clean";
 
-        DropzoneDecalPresenter.ShowDropzone();
+            DropzoneDecalPresenter.ShowDropzone();
+        });
     }
 
     private void SetInputFile(string inputPath)
     {
         Log.Logger.Information($"Input set to {inputPath}");
-        
+        _statusMessenger.SetProgress(null);
+
         if (!Path.Exists(inputPath))
         {
             Log.Logger.Error($"{inputPath} does not exist");
@@ -86,30 +97,30 @@ public partial class MainWindow : Window
             OutputPathDialogButton.IsEnabled = true;
             CleanButton.IsEnabled = true;
             CleanButton.Content = "Clean";
-
-            // Update the decal to show what type of file is loaded
-            if (SelectedCleanable.Type == CleanableType.Folder)
-            {
-                Log.Logger.Information("Folder selected");
-                
-                DropzoneDecalPresenter.ShowFolderReady();
-                StatusBarControl.SetStatus("Folder ready", null);
-            }
-            else if (SelectedCleanable.Type == CleanableType.ZipFile)
-            {
-                Log.Logger.Information("Zip file selected");
-                
-                DropzoneDecalPresenter.ShowZipArchiveReady();
-                StatusBarControl.SetStatus("Zip archive ready", null);
-            }
-            else
-            {
-                Log.Logger.Information("Text file selected");
-                
-                DropzoneDecalPresenter.ShowSingleFileReady();
-                StatusBarControl.SetStatus("File ready", null);
-            }
         });
+        
+        // Update the decal to show what type of file is loaded
+        if (SelectedCleanable.Type == CleanableType.Folder)
+        {
+            Log.Logger.Information("Folder selected");
+            _statusMessenger.SetStatus("Folder ready");
+
+            DropzoneDecalPresenter.ShowFolderReady();
+        }
+        else if (SelectedCleanable.Type == CleanableType.ZipFile)
+        {
+            Log.Logger.Information("Zip file selected");
+            _statusMessenger.SetStatus("Zip archive ready");
+
+            DropzoneDecalPresenter.ShowZipArchiveReady();
+        }
+        else
+        {
+            Log.Logger.Information("Text file selected");
+            _statusMessenger.SetStatus("File ready");
+
+            DropzoneDecalPresenter.ShowSingleFileReady();
+        }
     }
 
     ///////////////////
@@ -152,7 +163,7 @@ public partial class MainWindow : Window
     {
         if (SelectedCleanable is null || String.IsNullOrEmpty(OutputPathTextBox.Text)) return;
         SelectedCleanable.OutputPath = OutputPathTextBox.Text;
-        
+
         Log.Logger.Information($"Output path changed to {SelectedCleanable.OutputPath}");
     }
 
@@ -162,7 +173,7 @@ public partial class MainWindow : Window
         {
             Log.Logger.Error($"Error: {SelectedCleanable.InputPath} does not exist.");
             Reset();
-            StatusBarControl.ResetStatus();
+            _statusMessenger.SetStatus(null);
             return;
         }
 
@@ -178,35 +189,22 @@ public partial class MainWindow : Window
             OutputPathDialogButton.IsEnabled = false;
         });
 
-        // Decompress the archive and set the files' output target to the cleaned directory
-        Dispatcher.UIThread.Post(() =>
-        {
-            StatusBarControl.SetStatus($"Processing {Path.GetFileName(SelectedCleanable.InputPath)}...", null);
-        });
-
         try
         {
             Log.Logger.Information($"Cleaning {SelectedCleanable.InputPath}...");
             await cleaner.Clean(SelectedCleanable);
             Log.Logger.Information($"Finished cleaning {SelectedCleanable.InputPath}.");
+            _statusMessenger.SetStatus($"{SelectedCleanable.NumberOfQuotes} replacements made");
         }
         catch (Exception ex)
         {
             Log.Logger.Error(ex, $"Error while cleaning {SelectedCleanable.InputPath}:");
         }
-        
-        
-        // Reset view and inform user of how many quotes were replaced.
-        Dispatcher.UIThread.Post(() =>
-        {
-            StatusBarControl.SetStatus($"Replaced {SelectedCleanable.NumberOfQuotes}", "Done");
-            Reset();
-        });
 
-        Log.Logger.Information("Cleaning process completed.");
+        Reset();
     }
 
-    private async void OnDrop(object sender, DragEventArgs e)
+    private void OnDrop(object sender, DragEventArgs e)
     {
         IStorageItem[] storageItems = e.Data.GetFiles().ToArray();
         if (storageItems.Length == 1)
