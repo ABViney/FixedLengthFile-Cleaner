@@ -98,7 +98,7 @@ public partial class MainWindow : Window
             CleanButton.IsEnabled = true;
             CleanButton.Content = "Clean";
         });
-        
+
         // Update the decal to show what type of file is loaded
         if (SelectedCleanable.Type == CleanableType.Folder)
         {
@@ -195,6 +195,12 @@ public partial class MainWindow : Window
             await cleaner.Clean(SelectedCleanable);
             Log.Logger.Information($"Finished cleaning {SelectedCleanable.InputPath}.");
             _statusMessenger.SetStatus($"{SelectedCleanable.NumberOfQuotes} replacements made");
+            if (SelectedCleanable.Type == CleanableType.TextFile)
+            {
+                // Todo: Consider updating the Cleanable model to include a count of all cleanable files, or create a second model that flattens all files scheduled to be processed
+                // This is a stopgap fix to indicate that only one file was cleaned when handling single text files
+                _statusMessenger.SetProgress("1/1");
+            }
         }
         catch (Exception ex)
         {
