@@ -34,7 +34,6 @@ Multi-platform and portable -- all critical files are in the same directory as t
 
 ### Up next:
 
-- Implement logging
 - Add service for updating status bar outside the view
 - Allow overwriting the input file
 
