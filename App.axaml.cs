@@ -5,6 +5,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
+using FixedLengthFile_Cleaner.Services.StatusMessenger;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -40,8 +41,6 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
-
             ////////////
             // Services
             ////////////
@@ -53,6 +52,7 @@ public partial class App : Application
                 services.AddSingleton<CleanableFactory>();
                 services.AddSingleton<Cleaner>();
                 services.AddSingleton<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
+                services.AddSingleton<StatusMessenger>(x => StatusMessenger.GetInstance());
                 services.AddSingleton<TemporaryDataManager>();
 
                 Services = services.BuildServiceProvider();
@@ -60,6 +60,8 @@ public partial class App : Application
                 Log.Logger.Information("Services configured");
             }
 
+            desktop.MainWindow = new MainWindow();
+            
             //////////////////
             // Event handlers
             //////////////////
