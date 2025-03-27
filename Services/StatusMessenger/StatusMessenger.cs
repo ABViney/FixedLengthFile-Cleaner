@@ -3,22 +3,34 @@ using System.Collections.Generic;
 
 namespace FixedLengthFile_Cleaner.Services.StatusMessenger;
 
+/// <summary>
+/// An asynchronous messenger for updating the current status and progress of the application/current process.
+/// </summary>
 public class StatusMessenger
 {
+    /// <summary>
+    /// Event handler for <see cref="StatusEvent"/> events created by <see cref="SetStatus"/>.
+    /// </summary>
     public event EventHandler<StatusEvent> StatusChanged;
-    public event EventHandler<ProgressEvent> ProgressChanged;
-    
-    private static StatusMessenger _instance;
-    
-    private StatusMessenger() { }
 
-    
+    /// <summary>
+    /// Event handler for <see cref="ProgressEvent"/> events created by <see cref="SetProgress"/>.
+    /// </summary>
+    public event EventHandler<ProgressEvent> ProgressChanged;
+
+    private static StatusMessenger _instance;
+
+    private StatusMessenger()
+    {
+    }
+
     public static StatusMessenger GetInstance()
     {
         if (_instance == null)
         {
             _instance = new StatusMessenger();
         }
+
         return _instance;
     }
 
