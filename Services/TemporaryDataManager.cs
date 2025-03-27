@@ -8,11 +8,19 @@ using Serilog;
 
 namespace FixedLengthFile_Cleaner.Services;
 
+public interface ITemporaryDirectory : IDisposable
+{
+    string Path { get; }
+    void EnsureExists();
+}
+
 /// <summary>
 /// Service for managing temporary resources allocation throughout the application's lifetime.
 /// </summary>
 public class TemporaryDataManager : IDisposable
 {
+    public string PathToTemporaryDirectory() => Path.Combine(Path.GetTempPath(), Program.ApplicationName);
+    
     public TemporaryDataManager()
     {
         Log.Logger.Information("Creating temporary data manager...");
@@ -26,6 +34,9 @@ public class TemporaryDataManager : IDisposable
         Log.Logger.Information($"Created temporary data directory {PathToTemporaryDirectory()}");
     }
 
+    public ITemporaryDirectory CreateTemporaryDirectory() =>
+        new TemporaryDirectory(Path.Combine(PathToTemporaryDirectory(), Path.GetRandomFileName()));
+    
     public void Dispose()
     {
         Log.Logger.Information("Deleting temporary data directory");
@@ -45,5 +56,21 @@ public class TemporaryDataManager : IDisposable
         }
     }
 
-    public string PathToTemporaryDirectory() => Path.Combine(Path.GetTempPath(), Program.ApplicationName);
+    private class TemporaryDirectory : ITemporaryDirectory
+    {
+        public string Path { get; }
+        
+        public void EnsureExists() => Directory.CreateDirectory(Path);
+
+        public TemporaryDirectory(string path)
+        {
+            Path = path;
+        }
+        
+        public void Dispose()
+        {
+            Directory.Delete(Path, true);
+        }
+    }
 }
+
