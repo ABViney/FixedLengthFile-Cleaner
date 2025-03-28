@@ -13,7 +13,7 @@ namespace FixedLengthFile_Cleaner.Services;
 public class Cleaner
 {
     private StatusMessenger.StatusMessenger _statusMessenger = StatusMessenger.StatusMessenger.GetInstance();
-    
+
     /// <summary>
     /// Creates a <see cref="Task"/> that encapsulates the business logic for processing a <see cref="Cleanable"/> based 
     /// on its <see cref="Cleanable.Type"/>.
@@ -50,16 +50,8 @@ public class Cleaner
 
             Log.Logger.Information("Creating collection from folder contents...");
 
-            Cleanable[] cleanables;
-            if (folder.InputPath == folder.OutputPath)
-            {
-                cleanables = cf.CreateFromFolder(folder.InputPath, null);
-            }
-            else
-            {
-                Directory.CreateDirectory(folder.OutputPath);
-                cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
-            }
+            Cleanable[] cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
+            Directory.CreateDirectory(folder.OutputPath);
 
             int i = 1;
             foreach (var cleanable in cleanables)
@@ -78,12 +70,31 @@ public class Cleaner
         {
             Log.Logger.Information($"Cleaning file {textFile.InputPath}...");
 
+            // Creating a temporary file handle in case we can't write to the textfile's output path yet
+            var tdm = App.FetchService<TemporaryDataManager>();
+            using ITemporaryFile tempFile = tdm.CreateTemporaryFile();
+
+            // If the new file is overwriting the old file we must take additional steps
+            bool overwritingOriginalFile = textFile.InputPath == textFile.OutputPath;
+
+            string writeToPath;
+            if (overwritingOriginalFile)
+            {
+                // Can't write a file over a file being read, so we'll write it elsewhere and move it once we're done
+                writeToPath = tempFile.Path;
+            }
+            else
+            {
+                writeToPath = textFile.OutputPath;
+            }
+
             // Todo: Update this method to use the configuration to set the find/replace characters
             // Todo: Refactor to scan over a string rather than a single character
             try
             {
+                // Todo: Encapsulate this process to a separate service, let the "number of quotes" be an out parameter
                 using (StreamReader input = new StreamReader(textFile.InputPath))
-                using (StreamWriter output = new StreamWriter(textFile.OutputPath))
+                using (StreamWriter output = new StreamWriter(writeToPath))
                 {
                     int character;
                     while ((character = input.Read()) != -1) // Read character by character
@@ -97,6 +108,12 @@ public class Cleaner
 
                         output.Write((char)character);
                     }
+                }
+
+                if (overwritingOriginalFile)
+                {
+                    // Move the output file from the temporary location to its final location, overwriting the input
+                    File.Move(writeToPath, textFile.OutputPath, true);
                 }
 
                 Log.Logger.Information(
@@ -114,59 +131,51 @@ public class Cleaner
         return Task.Run(async () =>
         {
             var tdm = App.FetchService<TemporaryDataManager>();
-            string originalFilesFolder = Path.Combine(tdm.PathToTemporaryDirectory(), Path.GetRandomFileName());
-            string cleanedFilesFolder = originalFilesFolder + "_cleaned";
 
-            Log.Logger.Information($"Creating temporary folder at: {cleanedFilesFolder}");
-
-            Directory.CreateDirectory(cleanedFilesFolder);
-
-            _statusMessenger.SetStatus("Extracting files...");
-            Log.Logger.Information($"Unzipping file to {originalFilesFolder}");
-
-            try
+            using (ITemporaryDirectory originalFilesFolder = tdm.CreateTemporaryDirectory())
+            using (ITemporaryDirectory cleanedFilesFolder = tdm.CreateTemporaryDirectory())
             {
-                ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder);
-                Log.Logger.Information($"Successfully unpacked {zipFile.InputPath}");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error while unpacking {zipFile.InputPath}");
-            }
+                Log.Logger.Information($"Creating temporary folder at: {cleanedFilesFolder}");
+                cleanedFilesFolder.EnsureExists();
 
-            var cf = App.FetchService<CleanableFactory>();
+                _statusMessenger.SetStatus("Extracting files...");
+                Log.Logger.Information($"Unzipping file to {originalFilesFolder.Path}");
 
-            Cleanable folder = cf.Create(originalFilesFolder, cleanedFilesFolder);
+                try
+                {
+                    ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder.Path);
+                    Log.Logger.Information($"Successfully unpacked {zipFile.InputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, $"Error while unpacking {zipFile.InputPath}");
+                }
 
-            await Clean(folder);
-            zipFile.NumberOfQuotes += folder.NumberOfQuotes;
+                var cf = App.FetchService<CleanableFactory>();
 
-            if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
+                Cleanable folder = cf.Create(originalFilesFolder.Path, cleanedFilesFolder.Path);
 
-            _statusMessenger.SetStatus("Zipping files...");
-            Log.Logger.Information($"Zipping files...");
+                await Clean(folder);
+                zipFile.NumberOfQuotes += folder.NumberOfQuotes;
 
-            try
-            {
-                ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
-                Log.Logger.Information($"Successfully zipped {originalFilesFolder} to {zipFile.OutputPath}.");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder}:");
-            }
+                if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
 
-            _statusMessenger.SetStatus("Deleting temporary files...");
+                _statusMessenger.SetStatus("Zipping files...");
+                Log.Logger.Information($"Zipping files...");
 
-            try
-            {
+                try
+                {
+                    ZipFile.CreateFromDirectory(cleanedFilesFolder.Path, zipFile.OutputPath);
+                    Log.Logger.Information($"Successfully zipped {originalFilesFolder.Path} to {zipFile.OutputPath}.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder.Path}:");
+                }
+
+                _statusMessenger.SetStatus("Deleting temporary files...");
+
                 Log.Logger.Information($"Deleting temporary directories...");
-                Directory.Delete(originalFilesFolder, true);
-                Directory.Delete(cleanedFilesFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error occured while deleting temporary directories:");
             }
         });
     }
