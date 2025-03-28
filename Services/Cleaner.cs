@@ -50,16 +50,8 @@ public class Cleaner
 
             Log.Logger.Information("Creating collection from folder contents...");
 
-            Cleanable[] cleanables;
-            if (folder.InputPath == folder.OutputPath)
-            {
-                cleanables = cf.CreateFromFolder(folder.InputPath, null);
-            }
-            else
-            {
-                Directory.CreateDirectory(folder.OutputPath);
-                cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
-            }
+            Cleanable[] cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
+            Directory.CreateDirectory(folder.OutputPath);
 
             int i = 1;
             foreach (var cleanable in cleanables)

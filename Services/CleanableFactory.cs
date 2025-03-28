@@ -65,18 +65,15 @@ public class CleanableFactory
     /// <param name="outputFolderPath">The output location for each new object.</param>
     /// <returns>An array of <see cref="Cleanable"/>.</returns>
     /// <exception cref="DirectoryNotFoundException">When the <paramref name="inputFolderPath"/> is not a directory.</exception>
-    public Cleanable[] CreateFromFolder(string inputFolderPath, string? outputFolderPath)
+    public Cleanable[] CreateFromFolder(string inputFolderPath, string outputFolderPath)
     {
         if (!Directory.Exists(inputFolderPath)) throw new DirectoryNotFoundException("Input folder doesn't exist.");
 
         string[] inputFolderContents = Directory.GetFileSystemEntries(inputFolderPath);
-        bool useDefaultOutputFilenameSuffix = outputFolderPath is null;
 
         var cleanables = inputFolderContents.Select(inputFilePath =>
         {
-            string outputFilePath = useDefaultOutputFilenameSuffix
-                ? null
-                : Path.Combine(outputFolderPath, Path.GetFileName(inputFilePath));
+            string outputFilePath = Path.Combine(outputFolderPath, Path.GetFileName(inputFilePath));
             Cleanable cleanable = Create(inputFilePath, outputFilePath);
             return cleanable;
         }).ToArray();
