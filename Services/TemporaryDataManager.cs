@@ -14,12 +14,17 @@ public interface ITemporaryDirectory : IDisposable
     void EnsureExists();
 }
 
+public interface ITemporaryFile : IDisposable
+{
+    string Path { get; }
+}
+
 /// <summary>
 /// Service for managing temporary resources allocation throughout the application's lifetime.
 /// </summary>
 public class TemporaryDataManager : IDisposable
 {
-    public string PathToTemporaryDirectory() => Path.Combine(Path.GetTempPath(), Program.ApplicationName);
+    private string PathToTemporaryDirectory() => Path.Combine(Path.GetTempPath(), Program.ApplicationName);
     
     public TemporaryDataManager()
     {
@@ -36,6 +41,9 @@ public class TemporaryDataManager : IDisposable
 
     public ITemporaryDirectory CreateTemporaryDirectory() =>
         new TemporaryDirectory(Path.Combine(PathToTemporaryDirectory(), Path.GetRandomFileName()));
+
+    public ITemporaryFile CreateTemporaryFile() =>
+        new TemporaryFile(Path.Combine(PathToTemporaryDirectory(), Path.GetRandomFileName()));
     
     public void Dispose()
     {
@@ -70,6 +78,21 @@ public class TemporaryDataManager : IDisposable
         public void Dispose()
         {
             Directory.Delete(Path, true);
+        }
+    }
+
+    private class TemporaryFile : ITemporaryFile
+    {
+        public string Path { get; }
+
+        public TemporaryFile(string path)
+        {
+            Path = path;
+        }
+        
+        public void Dispose()
+        {
+            File.Delete(Path);
         }
     }
 }
