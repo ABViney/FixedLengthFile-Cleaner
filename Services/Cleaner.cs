@@ -114,59 +114,51 @@ public class Cleaner
         return Task.Run(async () =>
         {
             var tdm = App.FetchService<TemporaryDataManager>();
-            string originalFilesFolder = Path.Combine(tdm.PathToTemporaryDirectory(), Path.GetRandomFileName());
-            string cleanedFilesFolder = originalFilesFolder + "_cleaned";
 
-            Log.Logger.Information($"Creating temporary folder at: {cleanedFilesFolder}");
-
-            Directory.CreateDirectory(cleanedFilesFolder);
-
-            _statusMessenger.SetStatus("Extracting files...");
-            Log.Logger.Information($"Unzipping file to {originalFilesFolder}");
-
-            try
+            using (ITemporaryDirectory originalFilesFolder = tdm.CreateTemporaryDirectory())
+            using (ITemporaryDirectory cleanedFilesFolder = tdm.CreateTemporaryDirectory())
             {
-                ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder);
-                Log.Logger.Information($"Successfully unpacked {zipFile.InputPath}");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error while unpacking {zipFile.InputPath}");
-            }
+                Log.Logger.Information($"Creating temporary folder at: {cleanedFilesFolder}");
+                cleanedFilesFolder.EnsureExists();
 
-            var cf = App.FetchService<CleanableFactory>();
+                _statusMessenger.SetStatus("Extracting files...");
+                Log.Logger.Information($"Unzipping file to {originalFilesFolder.Path}");
 
-            Cleanable folder = cf.Create(originalFilesFolder, cleanedFilesFolder);
+                try
+                {
+                    ZipFile.ExtractToDirectory(zipFile.InputPath, originalFilesFolder.Path);
+                    Log.Logger.Information($"Successfully unpacked {zipFile.InputPath}");
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, $"Error while unpacking {zipFile.InputPath}");
+                }
 
-            await Clean(folder);
-            zipFile.NumberOfQuotes += folder.NumberOfQuotes;
+                var cf = App.FetchService<CleanableFactory>();
 
-            if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
+                Cleanable folder = cf.Create(originalFilesFolder.Path, cleanedFilesFolder.Path);
 
-            _statusMessenger.SetStatus("Zipping files...");
-            Log.Logger.Information($"Zipping files...");
+                await Clean(folder);
+                zipFile.NumberOfQuotes += folder.NumberOfQuotes;
 
-            try
-            {
-                ZipFile.CreateFromDirectory(cleanedFilesFolder, zipFile.OutputPath);
-                Log.Logger.Information($"Successfully zipped {originalFilesFolder} to {zipFile.OutputPath}.");
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder}:");
-            }
+                if (File.Exists(zipFile.OutputPath)) File.Delete(zipFile.OutputPath);
 
-            _statusMessenger.SetStatus("Deleting temporary files...");
+                _statusMessenger.SetStatus("Zipping files...");
+                Log.Logger.Information($"Zipping files...");
 
-            try
-            {
+                try
+                {
+                    ZipFile.CreateFromDirectory(cleanedFilesFolder.Path, zipFile.OutputPath);
+                    Log.Logger.Information($"Successfully zipped {originalFilesFolder.Path} to {zipFile.OutputPath}.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error(ex, $"Error while zipping {cleanedFilesFolder.Path}:");
+                }
+
+                _statusMessenger.SetStatus("Deleting temporary files...");
+
                 Log.Logger.Information($"Deleting temporary directories...");
-                Directory.Delete(originalFilesFolder, true);
-                Directory.Delete(cleanedFilesFolder, true);
-            }
-            catch (Exception ex)
-            {
-                Log.Logger.Error(ex, $"Error occured while deleting temporary directories:");
             }
         });
     }
