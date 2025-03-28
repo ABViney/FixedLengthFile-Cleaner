@@ -13,7 +13,7 @@ namespace FixedLengthFile_Cleaner.Services;
 public class Cleaner
 {
     private StatusMessenger.StatusMessenger _statusMessenger = StatusMessenger.StatusMessenger.GetInstance();
-    
+
     /// <summary>
     /// Creates a <see cref="Task"/> that encapsulates the business logic for processing a <see cref="Cleanable"/> based 
     /// on its <see cref="Cleanable.Type"/>.
@@ -78,12 +78,31 @@ public class Cleaner
         {
             Log.Logger.Information($"Cleaning file {textFile.InputPath}...");
 
+            // Creating a temporary file handle in case we can't write to the textfile's output path yet
+            var tdm = App.FetchService<TemporaryDataManager>();
+            using ITemporaryFile tempFile = tdm.CreateTemporaryFile();
+
+            // If the new file is overwriting the old file we must take additional steps
+            bool overwritingOriginalFile = textFile.InputPath == textFile.OutputPath;
+
+            string writeToPath;
+            if (overwritingOriginalFile)
+            {
+                // Can't write a file over a file being read, so we'll write it elsewhere and move it once we're done
+                writeToPath = tempFile.Path;
+            }
+            else
+            {
+                writeToPath = textFile.OutputPath;
+            }
+
             // Todo: Update this method to use the configuration to set the find/replace characters
             // Todo: Refactor to scan over a string rather than a single character
             try
             {
+                // Todo: Encapsulate this process to a separate service, let the "number of quotes" be an out parameter
                 using (StreamReader input = new StreamReader(textFile.InputPath))
-                using (StreamWriter output = new StreamWriter(textFile.OutputPath))
+                using (StreamWriter output = new StreamWriter(writeToPath))
                 {
                     int character;
                     while ((character = input.Read()) != -1) // Read character by character
@@ -97,6 +116,12 @@ public class Cleaner
 
                         output.Write((char)character);
                     }
+                }
+
+                if (overwritingOriginalFile)
+                {
+                    // Move the output file from the temporary location to its final location, overwriting the input
+                    File.Move(writeToPath, textFile.OutputPath, true);
                 }
 
                 Log.Logger.Information(
