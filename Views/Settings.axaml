@@ -46,8 +46,8 @@
                     
                     <!-- Default output suffix -->
                     <StackPanel Margin="0, 0, 30, 0">
-                        <TextBlock Text="Default output suffix:" />
-                        <TextBox Name="DefaultOutputSuffixTextBox" />
+                        <TextBlock Text="Output suffix:" />
+                        <TextBox Name="OutputSuffixTextBox" />
                     </StackPanel>
                     
                 </StackPanel>
@@ -56,10 +56,12 @@
                 <RelativePanel>
                     <Button
                         Content="Cancel"
+                        Click="OnCancelButtonClick"
                         RelativePanel.AlignLeftWithPanel="True" />
                     
                     <Button Name="CleanButton"
                             Content="Apply"
+                            Click="OnApplyButtonClick"
                             RelativePanel.AlignRightWithPanel="True" />
                 </RelativePanel>
                 
