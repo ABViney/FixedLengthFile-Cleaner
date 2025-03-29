@@ -34,10 +34,6 @@ Multi-platform and portable -- all critical files are in the same directory as t
 
 ### Up next:
 
-- Allow overwriting the input file
-
-### After that:
-
 - Add settings view
     - Support custom string find/replace
         - Support multiple find/replace patterns
