@@ -34,6 +34,12 @@ public partial class MainWindow : Window
         _statusMessenger = App.FetchService<StatusMessenger>();
         _statusMessenger.StatusChanged += StatusBarControl.OnStatusChanged;
         _statusMessenger.ProgressChanged += StatusBarControl.OnProgressChanged;
+
+        _settingsWindow.Closing += (sender, e) =>
+        {
+            e.Cancel = true;
+            ((Window)sender).Hide();
+        };
         
         Reset();
     }

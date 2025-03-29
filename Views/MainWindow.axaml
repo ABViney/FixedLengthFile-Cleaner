@@ -45,13 +45,8 @@
                 <RelativePanel>
                     <Button
                         RelativePanel.AlignLeftWithPanel="True"
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        Padding="0"
+                        Content="Settings"
                         Click="OnSettingsButtonClick">
-                        <Image Name="SettingsIcon"
-                               Source="/Assets/settings_decal.png"
-                               Height="22"/>
                     </Button>
                     
                     <Button Name="CleanButton"

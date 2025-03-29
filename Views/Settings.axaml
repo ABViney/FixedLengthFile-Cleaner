@@ -1,0 +1,70 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="120"
+        x:Class="FixedLengthFile_Cleaner.Views.SettingsWindow"
+        x:CompileBindings="True"
+        Title="Settings"
+        Icon="/Assets/icon.ico"
+        Width="300" CanResize="False" SizeToContent="Height">
+    
+    <StackPanel>
+        <Border Padding="10">
+            <StackPanel Spacing="20">
+                
+                <!-- Margin attribute is set in child StackPanels purely for stylistic reasons -->
+                <StackPanel Spacing="10">
+                    <!-- Find/Replace section -->
+                    <StackPanel MaxWidth="300" Spacing="10" Margin="0, 0, 30, 0">
+                        
+                        <!-- Find -->
+                        <StackPanel>
+                            <TextBlock Text="Find:" />
+                            <TextBox Name="FindTextBox" />
+                        </StackPanel>
+                        
+                        <!-- Replace -->
+                        <StackPanel>
+                            <TextBlock Text="Replace:" />
+                            <TextBox Name="ReplaceTextBox" />
+                        </StackPanel>
+                        
+                    </StackPanel>
+                    
+                    <!-- Separator -->
+                    <Rectangle Height="1" Fill="#4B4B4B" />
+                    
+                    <!-- File exclusion -->
+                    <StackPanel Margin="0, 0, 30, 0">
+                        <TextBlock Text="Exclude files:" />
+                        <TextBox Name="ExcludeFilesTextBox" />
+                    </StackPanel>
+                    
+                    <!-- Separator -->
+                    <Rectangle Height="1" Fill="#4B4B4B" />
+                    
+                    <!-- Default output suffix -->
+                    <StackPanel Margin="0, 0, 30, 0">
+                        <TextBlock Text="Default output suffix:" />
+                        <TextBox Name="DefaultOutputSuffixTextBox" />
+                    </StackPanel>
+                    
+                </StackPanel>
+                
+                <!-- Save or Cancel changes -->
+                <RelativePanel>
+                    <Button
+                        Content="Cancel"
+                        RelativePanel.AlignLeftWithPanel="True" />
+                    
+                    <Button Name="CleanButton"
+                            Content="Apply"
+                            RelativePanel.AlignRightWithPanel="True" />
+                </RelativePanel>
+                
+            </StackPanel>
+        </Border>
+            
+    </StackPanel>
+</Window>
