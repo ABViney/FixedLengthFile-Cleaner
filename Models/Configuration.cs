@@ -1,13 +1,13 @@
-﻿namespace FixedLengthFile_Cleaner.Models;
+﻿using System;
+using System.Runtime.InteropServices.JavaScript;
+using Serilog;
+
+namespace FixedLengthFile_Cleaner.Models;
 
 public class Configuration
 {
+    public string Find { get; set; }
+    public string Replace { get; set; }
     public string[] ExcludePatterns { get; set; }
-
-    public override string ToString()
-    {
-        return $"""
-                {nameof(ExcludePatterns)}={string.Join(',', ExcludePatterns)}
-                """;
-    }
+    public string OutputSuffix { get; set; }
 }
