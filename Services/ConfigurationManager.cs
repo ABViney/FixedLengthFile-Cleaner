@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using FixedLengthFile_Cleaner.Models;
 using Serilog;
 
@@ -22,72 +23,50 @@ public class ConfigurationManager
 
     private static ConfigurationManager _instance;
 
-
     ///////////
     /// Public 
     ///////////
     public Configuration GetConfiguration() => _configuration;
 
-    public static string? ReadConfigurationFile()
-    {
-        Log.Logger.Information("Reading configuration file.");
-        
-        if (!File.Exists(PathToConfigurationFile()))
-        {
-            Log.Logger.Warning("Could not find configuration file.");
-            return null;
-        }
-        
-        Log.Logger.Information("Found configuration file.");
-        return File.ReadAllText(PathToConfigurationFile());
-    }
-    
-    public void SetExcludePatterns(string[] excludePatterns)
-    {
-        Log.Logger.Information($"Setting exclude patterns: {String.Join(", ", excludePatterns)}");
-        
-        _configuration = new Configuration
-        {
-            ExcludePatterns = excludePatterns,
-        };
+    // Config is kept in the same location as the executable.
+    public static string PathToConfigurationFile() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.json");
 
+    public void UpdateConfiguration(Configuration config)
+    {
+        _configuration = config;
         SaveConfiguration();
     }
 
-    public static void WriteConfigurationFile(string configurationText)
+    private void SaveConfiguration()
     {
-        File.WriteAllText(PathToConfigurationFile(), configurationText);
+        if (_configuration is null)
+            throw new NullReferenceException($"Cannot save config: {nameof(_configuration)} is null");
+        Log.Logger.Information("Saving configuration file.");
+        try
+        {
+            string json = JsonSerializer.Serialize(_configuration, new JsonSerializerOptions { WriteIndented = true });
+            WriteConfigurationFile(json);
+            Log.Logger.Information("Configuration saved.");
+        }
+        catch (Exception ex)
+        {
+            Log.Logger.Warning(ex, "Failed to save configuration file.");
+        }
     }
 
-    // Config.ini is kept in the same location as the executable.
-    public static string PathToConfigurationFile() => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
-
     /////////////
-    /// Internal
+    /// Private
     /////////////
     private Configuration _configuration;
 
     private ConfigurationManager()
     {
-        ReadConfiguration();
+        InstantiateConfiguration();
     }
 
-    private string[] DefaultExcludePatterns() => new[] { "*.csv", "*.xlsx", "*.xls" };
-
-    private Configuration CreateDefaultConfiguration()
+    private void InstantiateConfiguration()
     {
-        Configuration defaultConfig = new Configuration
-        {
-            ExcludePatterns = DefaultExcludePatterns(),
-        };
-
-        return defaultConfig;
-    }
-
-
-    private void ReadConfiguration()
-    {
-        var configText = ReadConfigurationFile();
+        var configText = TryReadConfigurationFile();
         if (configText is null)
         {
             Log.Logger.Information("Creating default configuration.");
@@ -96,46 +75,50 @@ public class ConfigurationManager
         }
         else
         {
-            string[] excludePatterns = [];
-            string[] fields = configText.Split(';');
-            foreach (string field in fields)
+            // _configuration = Configuration.FromText(configText);
+            try
             {
-                string[] keyvalue = field.Split('=');
-                
-                if (keyvalue.Length != 2)
-                {
-                    Log.Logger.Warning($"Invalid configuration field: {field}");
-                    continue;
-                }
-                
-                switch (keyvalue[0])
-                {
-                    case nameof(Configuration.ExcludePatterns):
-                        excludePatterns = keyvalue[1].Split(',');
-                        break;
-                }
+                Log.Logger.Information("Deserializing configuration...");
+                _configuration = JsonSerializer.Deserialize<Configuration>(configText);
+                if (_configuration is null) throw new NullReferenceException($"Cannot deserialize configuration:\n {configText}");
             }
-
-            _configuration = new Configuration
+            catch (Exception ex)
             {
-                ExcludePatterns = excludePatterns,
-            };
+                Log.Logger.Error(ex, "Failed to deserialize configuration. Creating default configuration.");
+                _configuration = CreateDefaultConfiguration();
+            }
         }
 
         Log.Logger.Information("Config loaded.");
     }
 
-    private void SaveConfiguration()
+    private string? TryReadConfigurationFile()
     {
-        Log.Logger.Information("Saving configuration file.");
-        try
+        Log.Logger.Information("Attempting to read configuration file.");
+
+        if (!File.Exists(PathToConfigurationFile()))
         {
-            WriteConfigurationFile(_configuration.ToString());
-            Log.Logger.Information("Configuration saved.");
+            Log.Logger.Warning("Could not find configuration file.");
+            return null;
         }
-        catch (Exception ex)
+
+        Log.Logger.Information("Found configuration file.");
+        return File.ReadAllText(PathToConfigurationFile());
+    }
+
+    private void WriteConfigurationFile(string configurationText)
+    {
+        File.WriteAllText(PathToConfigurationFile(), configurationText);
+    }
+
+    private Configuration CreateDefaultConfiguration()
+    {
+        return new Configuration()
         {
-            Log.Logger.Warning(ex, "Failed to save configuration file.");
-        }
+            Find = "\"",
+            Replace = " ",
+            ExcludePatterns = ["*.csv", "*.xlsx", "*.xls"],
+            OutputSuffix = "_cleaned"
+        };
     }
 }

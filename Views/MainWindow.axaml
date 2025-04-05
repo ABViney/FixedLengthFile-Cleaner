@@ -43,6 +43,12 @@
                 
                 <!-- Do stuff button -->
                 <RelativePanel>
+                    <Button
+                        RelativePanel.AlignLeftWithPanel="True"
+                        Content="Settings"
+                        Click="OnSettingsButtonClick">
+                    </Button>
+                    
                     <Button Name="CleanButton"
                             Content="Clean"
                             Click="OnCleanButtonClick"

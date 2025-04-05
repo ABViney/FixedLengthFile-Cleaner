@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -10,6 +9,7 @@ using Avalonia.Threading;
 using FixedLengthFile_Cleaner.Models;
 using FixedLengthFile_Cleaner.Services;
 using FixedLengthFile_Cleaner.Services.StatusMessenger;
+using FixedLengthFile_Cleaner.Views;
 using Serilog;
 
 namespace FixedLengthFile_Cleaner;
@@ -20,6 +20,8 @@ public partial class MainWindow : Window
     private string _defaultOutputFileTextBoxContent = "Output file goes here";
 
     private StatusMessenger _statusMessenger;
+    
+    private SettingsWindow _settingsWindow = new SettingsWindow();
 
     public Cleanable? SelectedCleanable { get; set; }
 
@@ -33,6 +35,12 @@ public partial class MainWindow : Window
         _statusMessenger.StatusChanged += StatusBarControl.OnStatusChanged;
         _statusMessenger.ProgressChanged += StatusBarControl.OnProgressChanged;
 
+        _settingsWindow.Closing += (sender, e) =>
+        {
+            e.Cancel = true;
+            ((Window)sender).Hide();
+        };
+        
         Reset();
     }
 
@@ -218,5 +226,10 @@ public partial class MainWindow : Window
             Log.Logger.Information($"File dropped into application: {storageItems[0].TryGetLocalPath()}");
             SetInputFile(storageItems[0].TryGetLocalPath());
         }
+    }
+
+    private async void OnSettingsButtonClick(object sender, RoutedEventArgs e)
+    {
+        await _settingsWindow.ShowDialog(this);
     }
 }

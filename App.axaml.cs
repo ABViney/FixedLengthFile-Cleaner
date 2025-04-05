@@ -51,6 +51,7 @@ public partial class App : Application
                 
                 services.AddSingleton<CleanableFactory>();
                 services.AddSingleton<Cleaner>();
+                services.AddSingleton<ConfigurationManager>(x => ConfigurationManager.GetInstance());
                 services.AddSingleton<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
                 services.AddSingleton<StatusMessenger>(x => StatusMessenger.GetInstance());
                 services.AddSingleton<TemporaryDataManager>();
