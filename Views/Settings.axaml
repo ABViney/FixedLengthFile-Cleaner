@@ -21,13 +21,13 @@
                         <!-- Find -->
                         <StackPanel>
                             <TextBlock Text="Find:" />
-                            <TextBox Name="FindTextBox" />
+                            <TextBox Name="FindTextBox" AcceptsReturn="True" />
                         </StackPanel>
                         
                         <!-- Replace -->
                         <StackPanel>
                             <TextBlock Text="Replace:" />
-                            <TextBox Name="ReplaceTextBox" />
+                            <TextBox Name="ReplaceTextBox" AcceptsReturn="True" />
                         </StackPanel>
                         
                     </StackPanel>
