@@ -39,9 +39,8 @@ public partial class SettingsWindow : Window
             ExcludePatterns = ExcludeFilesTextBox.Text.Split(','),
             OutputSuffix = OutputSuffixTextBox.Text
         };
-        
         var cm = App.FetchService<ConfigurationManager>();
-        cm.SaveConfiguration(config);
+        cm.UpdateConfiguration(config);
         
         Hide();
     }
