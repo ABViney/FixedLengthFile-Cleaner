@@ -12,7 +12,12 @@ namespace FixedLengthFile_Cleaner.Services;
 /// </summary>
 public class CleanableFactory
 {
-    const string DefaultOutputFilenameSuffix = "_cleaned";
+    private Configuration _configuration;
+    
+    public CleanableFactory(Configuration configuration)
+    {
+        _configuration = configuration;
+    }
 
     /// <summary>
     /// Create a <see cref="Cleanable"/> from the provided <paramref name="inputFilePath"/>. If no
@@ -26,15 +31,16 @@ public class CleanableFactory
     public Cleanable Create(string inputFilePath, string? outputFilePath = null)
     {
         string extension = Path.GetExtension(inputFilePath);
+        string outputSuffix = _configuration.OutputSuffix;
 
         if (outputFilePath is null)
         {
             // change the output file path so it doesn't overwrite the original
             // If the file has an extension, insert the suffix before it.
             outputFilePath = (extension == String.Empty)
-                ? inputFilePath + DefaultOutputFilenameSuffix
+                ? inputFilePath + outputSuffix
                 : String.Concat(Path.ChangeExtension(inputFilePath, null),
-                    DefaultOutputFilenameSuffix, extension);
+                    outputSuffix, extension);
         }
 
 

@@ -49,12 +49,13 @@ public partial class App : Application
                 
                 var services = new ServiceCollection();
                 
-                services.AddSingleton<CleanableFactory>();
-                services.AddSingleton<Cleaner>();
                 services.AddSingleton<ConfigurationManager>(x => ConfigurationManager.GetInstance());
-                services.AddSingleton<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
                 services.AddSingleton<StatusMessenger>(x => StatusMessenger.GetInstance());
                 services.AddSingleton<TemporaryDataManager>();
+                
+                services.AddTransient<Cleaner>();
+                services.AddTransient<CleanableFactory>();
+                services.AddTransient<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
 
                 Services = services.BuildServiceProvider();
                 
