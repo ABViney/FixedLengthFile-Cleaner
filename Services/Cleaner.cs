@@ -93,22 +93,8 @@ public class Cleaner
             try
             {
                 // Todo: Encapsulate this process to a separate service, let the "number of quotes" be an out parameter
-                using (StreamReader input = new StreamReader(textFile.InputPath))
-                using (StreamWriter output = new StreamWriter(writeToPath))
-                {
-                    int character;
-                    while ((character = input.Read()) != -1) // Read character by character
-                    {
-                        // Replace quotation marks with spaces
-                        if (character == '"')
-                        {
-                            character = ' ';
-                            textFile.NumberOfQuotes++;
-                        }
-
-                        output.Write((char)character);
-                    }
-                }
+                var config = App.FetchService<Configuration>();
+                textFile.NumberOfQuotes = ReadFindReplaceWrite.Process(config.Find, config.Replace, textFile.InputPath, writeToPath);
 
                 if (overwritingOriginalFile)
                 {
