@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FixedLengthFile_Cleaner.Models;
 using Serilog;
@@ -47,19 +48,27 @@ public class Cleaner
         return Task.Run(async () =>
         {
             var cf = App.FetchService<CleanableFactory>();
+            var pm = App.FetchService<PatternMatcher>();
 
             Log.Logger.Information("Creating collection from folder contents...");
-
+            
             Cleanable[] cleanables = cf.CreateFromFolder(folder.InputPath, folder.OutputPath);
             Directory.CreateDirectory(folder.OutputPath);
-
+            
             int i = 1;
             foreach (var cleanable in cleanables)
             {
-                _statusMessenger.SetStatus($"Cleaning {Path.GetFileName(cleanable.InputPath)}...");
+                if (pm.Matches(cleanable.InputPath))
+                {
+                    await Skip(cleanable);
+                }
+                else
+                {
+                    _statusMessenger.SetStatus($"Cleaning {Path.GetFileName(cleanable.InputPath)}...");
+                    await Clean(cleanable);
+                    folder.NumberOfQuotes += cleanable.NumberOfQuotes;
+                }
                 _statusMessenger.SetProgress($"{i++}/{cleanables.Length}");
-                await Clean(cleanable);
-                folder.NumberOfQuotes += cleanable.NumberOfQuotes;
             }
         });
     }
@@ -164,5 +173,19 @@ public class Cleaner
                 Log.Logger.Information($"Deleting temporary directories...");
             }
         });
+    }
+
+    private Task Skip(Cleanable cleanable)
+    {
+        // Todo: Offer user to not copy skipped files to output
+        // bool doNotCopy = _configuration.DoNotCopyOnSkip;
+        Log.Logger.Information($"Skipping {cleanable.InputPath}...");
+        _statusMessenger.SetStatus($"Skipping {cleanable.InputPath}...");
+        // if (!doNotCopy)
+        // {
+        Log.Logger.Information($"Copying {cleanable.InputPath} to {cleanable.OutputPath}...");
+        File.Copy(cleanable.InputPath, cleanable.OutputPath, true);
+        // }
+        return Task.CompletedTask;
     }
 }
