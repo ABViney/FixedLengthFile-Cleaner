@@ -56,6 +56,7 @@ public partial class App : Application
                 services.AddTransient<Cleaner>();
                 services.AddTransient<CleanableFactory>();
                 services.AddTransient<Configuration>(x => ConfigurationManager.GetInstance().GetConfiguration());
+                services.AddTransient<PatternMatcher>();
 
                 Services = services.BuildServiceProvider();
                 
