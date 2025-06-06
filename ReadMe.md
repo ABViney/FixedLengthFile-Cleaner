@@ -37,7 +37,7 @@ Multi-platform and portable -- all critical files are in the same directory as t
 - [x] Add settings view
     - [x] Support custom string find/replace
         - [ ] Support multiple find/replace patterns
-    - [ ] Support pattern matching file exclusion
+    - [x] Support pattern matching file exclusion
     - [x] Support custom (or no) suffixes for outputs
 
 ### Eventually:
